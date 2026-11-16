@@ -54,7 +54,7 @@ AI platform dashboard shows each stage. All snapshots below are live captures
 from the Rome cluster, not mockups.
 
 **1 — Timeseries features in Feast.** `feature_repo/ingest.py` pulls
-[fenar/5gcore-prod](https://huggingface.co/datasets/fenar/5gcore-prod),
+[lakurella/mfgcore-prod](https://huggingface.co/datasets/lakurella/mfgcore-prod),
 engineers 1-hour rolling mean/min/max per KPI, lands the offline parquet,
 and pushes the latest vector per NF online. One feature view per NF, one
 `moc_telemetry` feature service:
@@ -177,7 +177,7 @@ KPIs for AMF (registration, NAS/NGAP success, N1/N2 messaging), SMF
 alert feed with REGISTRATION_STORM, RESOURCE_EXHAUSTION and
 SESSION_MANAGEMENT_FAILURE incidents and their before/during KPI deltas.
 Source: [Telco-AIX/houprod](https://github.com/open-experiments/Telco-AIX/tree/main/5gprod),
-published at [huggingface.co/datasets/fenar/5gcore-prod](https://huggingface.co/datasets/fenar/5gcore-prod).
+published at [huggingface.co/datasets/lakurella/mfgcore-prod](https://huggingface.co/datasets/lakurella/mfgcore-prod).
 The runbooks in `runbooks/` are written against those three real alert types.
 
 ## Harness tracks
