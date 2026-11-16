@@ -5,7 +5,7 @@
 > Qwen3.6-35B-A3B) all pass. Full evidence, including wire-level MaaS
 > request/response captures, lives in [QA/](./QA/).
 
-A single agent that answers MOC questions about a 5G core: it inspects telemetry, detects anomalies, and consults runbooks before answering. The "hello world" of agentic telco AI, except it already does real work.
+A single agent that answers MOC questions about a mfg core: it inspects telemetry, detects anomalies, and consults runbooks before answering. The "hello world" of agentic telco AI, except it already does real work.
 
 **Source experiments:** [houprod](https://github.com/open-experiments/Telco-AIX/tree/main/5gprod) (telemetry + MOC workflow), [telco-sme](https://github.com/open-experiments/Telco-AIX/tree/main/telco-sme) (domain knowledge access).
 
