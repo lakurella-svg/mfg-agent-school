@@ -17,7 +17,7 @@ SA. Namespace: `agent-school`.
 oc create configmap remediation-train-src -n agent-school \
   --from-file=train.py=../../../training/train_remediation_risk.py
 tar -czf /tmp/remdata.tgz -C ../../../../101-moc-assistant/data \
-  amf_metrics.csv smf_metrics.csv upf_metrics.csv alerts.json
+  station_metrics.csv job_metrics.csv line_metrics.csv alerts.json
 oc create configmap remediation-train-data -n agent-school \
   --from-file=data.tgz=/tmp/remdata.tgz
 oc apply -f job-train-risk.yaml

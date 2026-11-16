@@ -3,13 +3,13 @@
 **Alert type:** `RESOURCE_EXHAUSTION` · **Typical severity:** CRITICAL / MAJOR
 
 CPU, memory, or buffer pressure on a network function. On the UPF this shows
-as cpu_utilization and buffer_utilization climbing while throughput_mbps
+as capacity_utilization_pct and buffer_utilization climbing while throughput_mbps
 drops and packet_drop_rate and latency_ms rise. On AMF/SMF it shows as
 cpu/memory growth with success-rate erosion.
 
 ## Triage
 
-1. Identify which resource is exhausted: cpu_utilization, memory_utilization,
+1. Identify which resource is exhausted: capacity_utilization_pct, buffer_occupancy_pct,
    or (UPF) buffer_utilization.
 2. Check whether the pressure is load-driven (packet_processing_rate or
    message rates also up) or leak-driven (load flat, memory climbing).

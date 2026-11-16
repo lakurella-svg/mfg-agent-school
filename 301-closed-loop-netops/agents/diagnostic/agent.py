@@ -89,14 +89,14 @@ mlflow = _enable_mlflow()
 FEAST_URL = os.environ["FEAST_ONLINE_URL"].rstrip("/")
 FEAST_CA = os.environ.get(
     "FEAST_CA", "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt")
-# KPI columns per NF, from the published 5gcore-prod dataset (the same
+# KPI columns per NF, from the published mfgcore-prod dataset (the same
 # headers 101's pipeline materializes as 1h aggregates).
 NF_KPIS = {
-    "amf": ["cpu_utilization", "memory_utilization", "registration_rate",
-            "registration_success_rate", "session_setup_rate"],
-    "smf": ["cpu_utilization", "memory_utilization",
+    "amf": ["capacity_utilization_pct", "buffer_occupancy_pct", "registration_rate",
+            "station_checkin_success_rate", "job_setup_success_rate"],
+    "smf": ["capacity_utilization_pct", "buffer_occupancy_pct",
             "session_establishment_rate", "session_success_rate"],
-    "upf": ["cpu_utilization", "memory_utilization", "packet_drop_rate",
+    "upf": ["capacity_utilization_pct", "buffer_occupancy_pct", "packet_drop_rate",
             "latency_ms", "throughput_mbps"],
 }
 

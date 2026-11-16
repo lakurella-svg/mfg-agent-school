@@ -82,16 +82,16 @@ NOISE_SD = 0.03                 # outcome variance: real remediations are
 
 # health KPIs per NF (higher = healthier, except drop/latency for UPF)
 HEALTH = {
-    "amf": ["registration_success_rate", "authentication_success_rate",
-            "ngap_success_rate"],
+    "amf": ["station_checkin_success_rate", "station_auth_success_rate",
+            "control_handshake_success_rate"],
     "smf": ["session_success_rate"],
     "upf": ["qos_flow_success_rate"],
 }
 DEGRADE = {"upf": ["packet_drop_rate", "latency_ms"]}  # higher = worse
 UTIL = {
-    "amf": ["cpu_utilization", "memory_utilization"],
-    "smf": ["cpu_utilization", "memory_utilization"],
-    "upf": ["cpu_utilization", "memory_utilization", "buffer_utilization"],
+    "amf": ["capacity_utilization_pct", "buffer_occupancy_pct"],
+    "smf": ["capacity_utilization_pct", "buffer_occupancy_pct"],
+    "upf": ["capacity_utilization_pct", "buffer_occupancy_pct", "buffer_utilization"],
 }
 
 FEATURES = ["action_base", "target_util", "target_headroom", "severity",
@@ -103,7 +103,8 @@ FEATURES = ["action_base", "target_util", "target_headroom", "severity",
 
 def _load(data_dir):
     d = Path(data_dir)
-    frames = {nf: pd.read_csv(d / f"{nf}_metrics.csv") for nf in NFS}
+    files = {"amf": "station_metrics.csv", "smf": "job_metrics.csv", "upf": "line_metrics.csv"}
+    frames = {nf: pd.read_csv(d / files[nf]) for nf in NFS}
     alerts = json.loads((d / "alerts.json").read_text())
     return frames, alerts
 
@@ -133,8 +134,8 @@ def _nf_state(frames):
             "util": util.clip(0, 1),
             "severity": sev.clip(0, 3),
             "health_ratio": health,
-            "cpu": df.get("cpu_utilization", 0) / 100.0,
-            "mem": df.get("memory_utilization", 0) / 100.0,
+            "cpu": df.get("capacity_utilization_pct", 0) / 100.0,
+            "mem": df.get("buffer_occupancy_pct", 0) / 100.0,
             "buffer": df.get("buffer_utilization",
                              pd.Series(0.0, index=df.index)) / 100.0,
         })

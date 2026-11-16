@@ -1,4 +1,4 @@
-"""Feast feature definitions for the houprod telemetry (fenar/5gcore-prod).
+"""Feast feature definitions for the houprod telemetry (lakurella/mfgcore-prod).
 
 One entity (`nf`: amf | smf | upf) and one feature view per network
 function. Each view carries the raw per-minute KPIs plus 1-hour rolling
@@ -20,25 +20,28 @@ from feast.types import Float64, Int64
 
 nf = Entity(name="nf", join_keys=["nf"], description="5G core network function (amf|smf|upf)")
 
-# Raw KPI columns per NF, as published in fenar/5gcore-prod.
+# Raw KPI columns per NF, as published in lakurella/mfgcore-prod.
 NF_KPIS = {
     "amf": [
-        "http_connectivity", "cpu_utilization", "memory_utilization",
-        "registration_rate", "session_setup_rate", "authentication_success_rate",
-        "n1n2_message_rate", "registration_success_rate",
-        "slice_selection_success_rate", "nas_security_success_rate", "ngap_success_rate",
+        "mfg_link_connectivity", "capacity_utilization_pct", "buffer_occupancy_pct",
+        "registration_rate", "job_setup_success_rate", "station_auth_success_rate",
+        "mes_message_rate", "station_checkin_success_rate",
+        "line_assignment_success_rate", "nas_security_success_rate", "control_handshake_success_rate",
     ],
     "smf": [
-        "cpu_utilization", "memory_utilization", "session_establishment_rate",
+        "capacity_utilization_pct", "buffer_occupancy_pct", "session_establishment_rate",
         "n4_message_rate", "session_modification_rate", "policy_installation_rate",
         "pfcp_message_rate", "session_success_rate",
     ],
     "upf": [
-        "cpu_utilization", "memory_utilization", "packet_processing_rate",
+        "capacity_utilization_pct", "buffer_occupancy_pct", "packet_processing_rate",
         "tunnel_establishment_rate", "buffer_utilization", "qos_flow_success_rate",
         "throughput_mbps", "packet_drop_rate", "latency_ms",
     ],
 }
+
+# Published file per NF in lakurella/mfgcore-prod (and the bundled data/ copy).
+NF_FILES = {"amf": "station_metrics.csv", "smf": "job_metrics.csv", "upf": "line_metrics.csv"}
 
 AGGS = ("1h_mean", "1h_min", "1h_max")
 

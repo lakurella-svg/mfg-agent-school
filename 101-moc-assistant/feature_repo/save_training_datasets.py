@@ -30,9 +30,13 @@ import os
 
 import pandas as pd
 
-HF = "https://huggingface.co/datasets/fenar/5gcore-prod/resolve/main"
+HF = "https://huggingface.co/datasets/lakurella/mfgcore-prod/resolve/main"
 WINDOW = 60  # samples ~= 1 hour at 1-minute resolution
 NFS = ("amf", "smf", "upf")
+NF_FILES = {"amf": "station_metrics.csv", "smf": "job_metrics.csv", "upf": "line_metrics.csv"}
+# the dataset is private: send HF_TOKEN when it is set
+HF_OPTS = ({"Authorization": f"Bearer {os.environ['HF_TOKEN']}"}
+           if os.environ.get("HF_TOKEN") else None)
 
 
 def cluster_repo() -> str:
@@ -77,7 +81,7 @@ def main() -> None:
 
         # Rebuild the engineered offline frame (same as ingest.py) so the
         # registry's relative FileSource path resolves.
-        raw = pd.read_csv(f"{HF}/{nf}_metrics.csv")
+        raw = pd.read_csv(f"{HF}/{NF_FILES[nf]}", storage_options=HF_OPTS)
         raw["event_timestamp"] = pd.to_datetime(raw.pop("timestamp"))
         raw = raw.sort_values("event_timestamp").reset_index(drop=True)
         out = raw[["event_timestamp"] + kpis].copy()

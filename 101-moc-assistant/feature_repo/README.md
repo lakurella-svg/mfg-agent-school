@@ -9,7 +9,7 @@ Feature store** (feature store `fivegprod`, entity `nf`, feature views
 Flow (all real, verified on Rome):
 
 1. `ingest.py` loads the published dataset
-   ([hf.co/datasets/fenar/5gcore-prod](https://huggingface.co/datasets/fenar/5gcore-prod)
+   ([hf.co/datasets/lakurella/mfgcore-prod](https://huggingface.co/datasets/lakurella/mfgcore-prod)
    with `DATASET_SOURCE=hf`, the bundled CSVs otherwise), engineers 1-hour
    rolling mean/min/max per KPI, writes the offline parquet, and pushes the
    latest vector per NF to the online store.

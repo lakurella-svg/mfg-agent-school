@@ -114,7 +114,7 @@ def main() -> None:
             "train_fraction": TRAIN_FRACTION,
             "window": "1h rolling mean/min/max",
             "feature_source": "feast:fivegprod (offline file source)",
-            "dataset": "hf.co/datasets/fenar/5gcore-prod",
+            "dataset": "hf.co/datasets/lakurella/mfgcore-prod",
         })
         for nf in NF_KPIS:
             df = historical_features(nf)

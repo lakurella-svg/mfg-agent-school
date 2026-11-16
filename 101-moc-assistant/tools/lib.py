@@ -1,6 +1,6 @@
 """Skill logic for the NOC Assistant.
 
-Works on the real Telco-AIX houprod dataset (https://huggingface.co/datasets/fenar/5gcore-prod):
+Works on the real Telco-AIX houprod dataset (https://huggingface.co/datasets/lakurella/mfgcore-prod):
 per-minute AMF/SMF/UPF KPI series plus a structured alert feed. Anomaly
 detection uses Isolation Forest, the same algorithm the source experiment
 uses, so the agent's tools behave like the original NOC pipeline.
@@ -25,9 +25,9 @@ DATA_DIR = BASE_DIR / "data"
 RUNBOOK_DIR = BASE_DIR / "runbooks"
 
 NF_FILES = {
-    "amf": DATA_DIR / "amf_metrics.csv",
-    "smf": DATA_DIR / "smf_metrics.csv",
-    "upf": DATA_DIR / "upf_metrics.csv",
+    "amf": DATA_DIR / "station_metrics.csv",
+    "smf": DATA_DIR / "job_metrics.csv",
+    "upf": DATA_DIR / "line_metrics.csv",
 }
 
 # Feature-store mode (RHOAI): when FEAST_ONLINE_URL is set, telemetry tools

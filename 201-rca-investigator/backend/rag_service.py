@@ -29,12 +29,13 @@ DATA_DIR = Path(os.environ.get(
 ))
 
 NFS = ("amf", "smf", "upf")
+NF_FILES = {"amf": "station_metrics.csv", "smf": "job_metrics.csv", "upf": "line_metrics.csv"}
 
 
 def build_corpus() -> tuple[list[dict], list[str]]:
     docs: list[dict] = []
     for nf in NFS:
-        df = pd.read_csv(DATA_DIR / f"{nf}_metrics.csv")
+        df = pd.read_csv(DATA_DIR / NF_FILES[nf])
         cols = [c for c in df.columns if c != "timestamp"]
         for i, row in df.iterrows():
             text = f"{row['timestamp']} - " + " | ".join(

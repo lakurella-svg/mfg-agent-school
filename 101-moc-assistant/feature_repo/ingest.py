@@ -3,7 +3,7 @@
 Steps (the pieces the revenueassurance notebooks used to do by hand, as a
 repeatable pipeline):
 
-1. Load the per-NF telemetry (HuggingFace `fenar/5gcore-prod` when
+1. Load the per-NF telemetry (HuggingFace `lakurella/mfgcore-prod` when
    DATASET_SOURCE=hf, else the CSVs bundled with the course).
 2. Engineer features: 1-hour rolling mean/min/max per KPI (the vectors the
    anomaly model trains and scores on).
@@ -28,21 +28,24 @@ from pathlib import Path
 
 import pandas as pd
 
-from features import AGGS, NF_KPIS  # noqa: F401  (shared column definitions)
+from features import AGGS, NF_FILES, NF_KPIS  # noqa: F401  (shared column definitions)
 
 HERE = Path(__file__).resolve().parent
 DATA_DIR = Path(os.environ.get("FEATURE_DATA_DIR", HERE / "data"))
 COURSE_DATA = HERE.parent / "data"
-HF_BASE = "https://huggingface.co/datasets/fenar/5gcore-prod/resolve/main"
+HF_BASE = "https://huggingface.co/datasets/lakurella/mfgcore-prod/resolve/main"
 WINDOW = 60  # samples ~= 1 hour at 1-minute resolution
 
 
 def load_raw(nf: str) -> pd.DataFrame:
     if os.environ.get("DATASET_SOURCE", "local") == "hf":
-        url = f"{HF_BASE}/{nf}_metrics.csv"
-        df = pd.read_csv(url)
+        url = f"{HF_BASE}/{NF_FILES[nf]}"
+        # the dataset is private: send HF_TOKEN when it is set
+        token = os.environ.get("HF_TOKEN")
+        opts = {"Authorization": f"Bearer {token}"} if token else None
+        df = pd.read_csv(url, storage_options=opts)
     else:
-        df = pd.read_csv(COURSE_DATA / f"{nf}_metrics.csv")
+        df = pd.read_csv(COURSE_DATA / NF_FILES[nf])
     df["event_timestamp"] = pd.to_datetime(df.pop("timestamp"))
     return df.sort_values("event_timestamp").reset_index(drop=True)
 

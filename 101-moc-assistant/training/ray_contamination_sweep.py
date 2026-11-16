@@ -1,7 +1,7 @@
 """Contamination calibration sweep for the 101 anomaly model — Ray on Kueue.
 
 Nine Ray tasks (3 NFs x 3 contamination values) train and evaluate an
-IsolationForest on the published 5gcore-prod telemetry, score each config
+IsolationForest on the published mfgcore-prod telemetry, score each config
 against the labeled alert windows (F1) and against the labeled incident
 rate (rate gap), and log everything to MLflow (workspace agent-school,
 experiment `houprod-anomaly-sweep`). Real distributed compute, real data,
@@ -26,9 +26,10 @@ import urllib.request
 
 import ray
 
-HF = "https://huggingface.co/datasets/fenar/5gcore-prod/resolve/main"
+HF = "https://huggingface.co/datasets/lakurella/mfgcore-prod/resolve/main"
 GRID = [0.02, 0.05, 0.10]
 NFS = ["amf", "smf", "upf"]
+NF_FILES = {"amf": "station_metrics.csv", "smf": "job_metrics.csv", "upf": "line_metrics.csv"}
 WINDOW, SPLIT = 60, 0.7
 
 
@@ -39,7 +40,11 @@ def fetch(url, tries=6):
     import time
     for i in range(tries):
         try:
-            return urllib.request.urlopen(url).read()
+            # the dataset is private: send HF_TOKEN when it is set
+            token = os.environ.get("HF_TOKEN")
+            req = urllib.request.Request(
+                url, headers={"Authorization": f"Bearer {token}"} if token else {})
+            return urllib.request.urlopen(req).read()
         except Exception:
             time.sleep(5 * (i + 1))
     raise RuntimeError(f"failed to fetch {url}")
@@ -119,7 +124,7 @@ ray.init()
 print("cluster:", ray.cluster_resources(), flush=True)
 alerts_raw = json.loads(fetch(f"{HF}/alerts.json"))
 alerts = alerts_raw.get("alerts", alerts_raw if isinstance(alerts_raw, list) else [])
-data = {nf: ray.put(fetch(f"{HF}/{nf}_metrics.csv")) for nf in NFS}
+data = {nf: ray.put(fetch(f"{HF}/{NF_FILES[nf]}")) for nf in NFS}
 print("datasets staged in object store", flush=True)
 results = ray.get([evaluate.remote(nf, c, data[nf], alerts)
                    for nf in NFS for c in GRID])
