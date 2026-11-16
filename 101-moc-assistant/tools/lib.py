@@ -1,6 +1,6 @@
 """Skill logic for the NOC Assistant.
 
-Works on the real Telco-AIX 5gprod dataset (https://huggingface.co/datasets/fenar/5gcore-prod):
+Works on the real Telco-AIX houprod dataset (https://huggingface.co/datasets/fenar/5gcore-prod):
 per-minute AMF/SMF/UPF KPI series plus a structured alert feed. Anomaly
 detection uses Isolation Forest, the same algorithm the source experiment
 uses, so the agent's tools behave like the original NOC pipeline.
@@ -62,7 +62,7 @@ def _feast_online(nf: str, feature_refs: list[str]) -> dict[str, float]:
 def _load(nf: str) -> pd.DataFrame:
     path = NF_FILES[nf]
     if not path.exists():
-        raise FileNotFoundError(f"{path} missing; copy the 5gprod dataset into data/")
+        raise FileNotFoundError(f"{path} missing; copy the houprod dataset into data/")
     df = pd.read_csv(path, parse_dates=["timestamp"])
     return df.sort_values("timestamp")
 

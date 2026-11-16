@@ -1,4 +1,4 @@
-"""Anomaly-model training for 5gprod telemetry: Feast offline -> train ->
+"""Anomaly-model training for houprod telemetry: Feast offline -> train ->
 test/validate -> MLflow (RHOAI Experiments, Model training view).
 
 The agentified version of the manual notebook flow (Telco-AIX): features
@@ -9,7 +9,7 @@ validated on the remaining 30% against the labeled incident windows in
 data/alerts.json (rows inside an alert window for that NF are ground-truth
 anomalies). Params, per-NF precision/recall/F1, and the model bundle are
 logged to MLflow; the run shows up in the RHOAI dashboard under
-Experiments -> 5gprod-anomaly (Model training).
+Experiments -> houprod-anomaly (Model training).
 
 The saved bundle {nf: (model, feature_cols, threshold)} is what
 feature_repo/ingest.py --score uses for the pipeline's inference run.
@@ -104,10 +104,10 @@ def main() -> None:
     import mlflow
 
     mlflow.set_tracking_uri(os.environ["MLFLOW_TRACKING_URI"])
-    mlflow.set_experiment(os.environ.get("MLFLOW_EXPERIMENT", "5gprod-anomaly"))
+    mlflow.set_experiment(os.environ.get("MLFLOW_EXPERIMENT", "houprod-anomaly"))
 
     bundle, metrics_all = {}, {}
-    with mlflow.start_run(run_name="isolation-forest-5gprod") as run:
+    with mlflow.start_run(run_name="isolation-forest-houprod") as run:
         mlflow.log_params({
             "algorithm": "IsolationForest",
             "contamination": CONTAMINATION,
@@ -174,7 +174,7 @@ def main() -> None:
             python_model=AnomalyBundleModel(),
             artifacts={"bundle": str(out)},
             registered_model_name=os.environ.get(
-                "REGISTERED_MODEL_NAME", "5gprod-anomaly-isolationforest"),
+                "REGISTERED_MODEL_NAME", "houprod-anomaly-isolationforest"),
         )
         print(f"[train] bundle -> {out}; run_id={run.info.run_id}")
         print(f"MLFLOW_RUN_ID={run.info.run_id}")

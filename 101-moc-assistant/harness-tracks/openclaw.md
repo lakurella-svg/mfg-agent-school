@@ -82,7 +82,7 @@ Restart the gateway and ask through any connected channel or the TUI:
 > What is wrong in the 5G core right now?
 
 OpenClaw's loop calls the same Isolation Forest, alert feed, and runbook
-tools over the same real 5gprod data, then answers.
+tools over the same real houprod data, then answers.
 
 ## 5. Continuous operation (7/24 NOC watch)
 

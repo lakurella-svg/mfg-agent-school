@@ -218,7 +218,7 @@ def _enable_mlflow() -> None:
         import mlflow
 
         mlflow.set_tracking_uri(uri)
-        mlflow.set_experiment(os.environ.get("MLFLOW_EXPERIMENT", "101-noc-assistant"))
+        mlflow.set_experiment(os.environ.get("MLFLOW_EXPERIMENT", "101-moc-assistant"))
         mlflow.openai.autolog()
         suffix = f" (workspace {workspace})" if workspace else ""
         trace("mlflow", f"autolog enabled -> {uri}{suffix}")

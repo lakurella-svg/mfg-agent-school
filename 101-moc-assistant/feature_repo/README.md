@@ -16,7 +16,7 @@ Flow (all real, verified on Rome):
 2. `../training/train_anomaly.py` retrieves the same features point-in-time
    from the offline store, trains an IsolationForest per NF, validates
    against the labeled alert windows, and logs params/metrics/model to
-   MLflow → **Experiments → 5gprod-anomaly** (Model training view).
+   MLflow → **Experiments → houprod-anomaly** (Model training view).
 2b. `save_training_datasets.py` persists the same point-in-time
    retrieval as named SavedDatasets in the registry (dashboard:
    Feature store -> Datasets) - the reproducibility artifact a model

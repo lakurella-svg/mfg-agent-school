@@ -22,7 +22,7 @@ const BASE = process.env.BASE_URL || 'http://localhost:8777';
     const body = await page.evaluate(() => document.getElementById('gbody').innerText);
     check('F2 101 s6 Expect mentions Traces-not-runs', body.includes('Traces tab') && body.includes('runs list stays empty'));
     check('F2 101 s6 old promise gone', !body.includes('the run appears with full LLM traces'));
-    check('F2 101 s6 names right experiment', body.includes('101-noc-assistant'));
+    check('F2 101 s6 names right experiment', body.includes('101-moc-assistant'));
     // dashboard note after running
     await runCur(page);
     await page.evaluate(() => go('experiments'));

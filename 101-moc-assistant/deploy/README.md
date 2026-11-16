@@ -55,7 +55,7 @@ oc patch cronjob noc-sweep -p '{"spec":{"suspend":false}}'
 
 ## Notes
 
-- The image bundles the real 5gprod dataset and runbooks; swapping to live
+- The image bundles the real houprod dataset and runbooks; swapping to live
   telemetry means replacing `tools/lib.py` data access, nothing else.
 - Pod security: `runAsNonRoot`, default seccomp, all capabilities dropped,
   no privilege escalation; the UBI9 Python image runs unprivileged and
@@ -85,7 +85,7 @@ oc create -f deploy/ocp/job-ask.yaml
 The rome overlay also generates a `mlflow-tracking` ConfigMap
 (`MLFLOW_TRACKING_URI` + `MLFLOW_WORKSPACE`), which the Job/CronJob import
 as optional env — so on Rome every agent run automatically lands in the
-RHOAI dashboard under **Experiments → 101-noc-assistant**, with full
+RHOAI dashboard under **Experiments → 101-moc-assistant**, with full
 LLM-call traces from `mlflow.openai.autolog()`. RHOAI's managed MLflow is
 workspace-scoped: `agent/_enable_mlflow()` adds the `X-MLFLOW-WORKSPACE`
 header and authenticates with the pod's ServiceAccount token;

@@ -1,26 +1,26 @@
 # 101 · NOC Assistant
 
 > **QA status:** offline mode, MCP servers, mock loop, and two live runs
-> against Red Hat OpenShift AI Model-as-a-Service (LiteLLM gateway,
+> against the AI platform's Model-as-a-Service (LiteLLM gateway,
 > Qwen3.6-35B-A3B) all pass. Full evidence, including wire-level MaaS
 > request/response captures, lives in [QA/](./QA/).
 
 A single agent that answers NOC questions about a 5G core: it inspects telemetry, detects anomalies, and consults runbooks before answering. The "hello world" of agentic telco AI, except it already does real work.
 
-**Source experiments:** [5gprod](https://github.com/open-experiments/Telco-AIX/tree/main/5gprod) (telemetry + NOC workflow), [telco-sme](https://github.com/open-experiments/Telco-AIX/tree/main/telco-sme) (domain knowledge access).
+**Source experiments:** [houprod](https://github.com/open-experiments/Telco-AIX/tree/main/5gprod) (telemetry + NOC workflow), [telco-sme](https://github.com/open-experiments/Telco-AIX/tree/main/telco-sme) (domain knowledge access).
 
 ## What it teaches
 
 1. The agent loop: plan, call a tool, observe, repeat, answer.
 2. Tools as MCP servers: the agent's capabilities live outside the agent.
-3. The model as a stateless service: any OpenAI-compatible endpoint works, vLLM on RHOAI is the reference path.
+3. The model as a stateless service: any OpenAI-compatible endpoint works, vLLM on the AI platform is the reference path.
 4. The data pipeline as a platform citizen: features in Feast, training in Experiments, the model versioned in a registry — not buried in a notebook.
 5. Tracing: every step — agent turns *and* classical-model inference — lands in MLflow.
 
 ## Walkthrough video
 
 A narrated walkthrough (6:29) — the problem, then the step-by-step agentic
-solution over the live RHOAI portal on our reference cluster called Venice.
+solution over the live AI platform portal on our reference cluster called Venice.
 Click the poster to play or download:
 
 [![101 · NOC Assistant — narrated walkthrough](./images/walkthrough-poster.png)](./images/101-moc-assistant.mp4)
@@ -50,7 +50,7 @@ whole blueprint turns on:
 
 The [Telco-AIX](https://github.com/open-experiments/Telco-AIX) experiments
 did this flow by hand in notebooks. Here it is the platform's job, and the
-RHOAI dashboard shows each stage. All snapshots below are live captures
+AI platform dashboard shows each stage. All snapshots below are live captures
 from the Rome cluster, not mockups.
 
 **1 — Timeseries features in Feast.** `feature_repo/ingest.py` pulls
@@ -59,7 +59,7 @@ engineers 1-hour rolling mean/min/max per KPI, lands the offline parquet,
 and pushes the latest vector per NF online. One feature view per NF, one
 `noc_telemetry` feature service:
 
-![Feature views on RHOAI](./images/rhoai/feature-views.png)
+![Feature views on the AI platform](./images/rhoai/feature-views.png)
 
 **2 — Training as an experiment.** `training/train_anomaly.py` retrieves
 the same features point-in-time from the offline store (no
@@ -83,7 +83,7 @@ stays a plain Job — an IsolationForest does not need a Ray cluster. What
 3 contamination values) across an ephemeral Ray cluster (head + worker,
 alive only for the job), scores each against the labeled alert windows
 and the labeled incident rate, and logs the sweep to MLflow
-(`5gprod-anomaly-sweep`, with the best pick per NF). The RayJob carries
+(`houprod-anomaly-sweep`, with the best pick per NF). The RayJob carries
 the `kueue.x-k8s.io/queue-name` label, so RHBOK admits it against the
 shared ClusterQueue before KubeRay spins up a single pod — the same
 quota gate the Feast dataset Job goes through, visible in
@@ -100,7 +100,7 @@ KubeRay's silent `oauth-proxy-sa` swap) are in
 
 **3 — A versioned model, not a pickle in a bucket.** The run logs one
 pyfunc model that routes each row to its NF's forest, and registers it as
-`5gprod-anomaly-isolationforest`. Lineage — dataset, feature source,
+`houprod-anomaly-isolationforest`. Lineage — dataset, feature source,
 window, split — is all in the params:
 
 ![Model overview](./images/rhoai/model-overview.png)
@@ -128,7 +128,7 @@ GenAI loop:
 bundled CSVs serve the same shapes — laptop learners need no cluster.
 
 Cluster manifests for the pipeline Jobs live in [deploy/](./deploy/);
-RHOAI 3.5 EA2 operational findings (registry persistence, PVC access
+AI platform 3.5 EA2 operational findings (registry persistence, PVC access
 pattern, dashboard labels) are in
 [feature_repo/README.md](./feature_repo/README.md).
 
@@ -137,7 +137,7 @@ pattern, dashboard labels) are in
 | Blueprint component | Here |
 |---------------------|------|
 | Harness | `agent/noc_agent.py` custom tool-calling loop (any OpenAI-compatible endpoint) |
-| Model | your endpoint via `LLM_BASE_URL` (vLLM / RHOAI MaaS) |
+| Model | your endpoint via `LLM_BASE_URL` (vLLM / AI platform MaaS) |
 | Skills (thin clients) | `tools/lib.py` functions (Feast online client or CSVs, alert feed, runbooks) |
 | Skill exposure | `tools/telemetry_mcp.py`, `tools/runbook_mcp.py` (MCP servers) |
 | Feature store | Feast `fivegprod` (`feature_repo/`) — offline training set + online serving |
@@ -170,13 +170,13 @@ python tools/runbook_mcp.py
 
 ## Data
 
-`data/` carries the real Telco-AIX 5gprod dataset: 24 hours of per-minute
+`data/` carries the real Telco-AIX houprod dataset: 24 hours of per-minute
 KPIs for AMF (registration, NAS/NGAP success, N1/N2 messaging), SMF
 (session establishment, PFCP/N4 messaging, policy installation) and UPF
 (packet processing, tunnels, throughput, drops, latency), plus a structured
 alert feed with REGISTRATION_STORM, RESOURCE_EXHAUSTION and
 SESSION_MANAGEMENT_FAILURE incidents and their before/during KPI deltas.
-Source: [Telco-AIX/5gprod](https://github.com/open-experiments/Telco-AIX/tree/main/5gprod),
+Source: [Telco-AIX/houprod](https://github.com/open-experiments/Telco-AIX/tree/main/5gprod),
 published at [huggingface.co/datasets/fenar/5gcore-prod](https://huggingface.co/datasets/fenar/5gcore-prod).
 The runbooks in `runbooks/` are written against those three real alert types.
 
@@ -186,7 +186,7 @@ The agent above is the teaching harness: a custom loop you can read top to
 bottom. The same skills run unchanged under product harnesses:
 
 - [OpenClaw track](./harness-tracks/openclaw.md): register the two MCP
-  servers and the RHOAI endpoint in `~/.openclaw/openclaw.json` and ask the
+  servers and the AI platform endpoint in `~/.openclaw/openclaw.json` and ask the
   same question through OpenClaw's own always-on loop. No agent code involved.
   The track also covers continuous 7/24 operation via OpenClaw heartbeat:
   periodic anomaly/alert sweeps that pick up fresh data from `data/`
@@ -217,7 +217,7 @@ is the point.
 lifecycle runs on the cluster: the feature pipeline lands offline
 history and pushes per-NF verdicts to the Feast online store on a
 CronJob cadence; the IsolationForest detector is trained, versioned in
-workspace MLflow (`5gprod-anomaly`), and calibrated by a RayJob sweep
+workspace MLflow (`houprod-anomaly`), and calibrated by a RayJob sweep
 admitted through Kueue; and the agent's tool-calling loop is traced
 end to end. The `QA/` pack carries the full evidence: deterministic
 offline run, MCP smoke tests, and live wire-logged runs (auth

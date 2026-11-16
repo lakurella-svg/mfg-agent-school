@@ -31,7 +31,7 @@ The investigator works the same incident data the NOC assistant watches: 101's t
 
 ```mermaid
 flowchart LR
-  DATA["incident telemetry + logs<br/>(101's 5gprod data, baked at build)"] --> IDX["retrieval index<br/>backend/rag_service.py"]
+  DATA["incident telemetry + logs<br/>(101's houprod data, baked at build)"] --> IDX["retrieval index<br/>backend/rag_service.py"]
   IDX --> SVC["rca-rag Service :8201<br/>Deployment, own identity, scalable"]
   SVC --> E1["search_evidence"]
   SVC --> E2["get_metric_window"]

@@ -4,7 +4,7 @@ Nine Ray tasks (3 NFs x 3 contamination values) train and evaluate an
 IsolationForest on the published 5gcore-prod telemetry, score each config
 against the labeled alert windows (F1) and against the labeled incident
 rate (rate gap), and log everything to MLflow (workspace agent-school,
-experiment `5gprod-anomaly-sweep`). Real distributed compute, real data,
+experiment `houprod-anomaly-sweep`). Real distributed compute, real data,
 real tracking — admitted through Kueue (LocalQueue `agent-school-queue`).
 
 Runs as deploy/ocp/rome/rayjob-anomaly-sweep.yaml: the RayJob carries the
@@ -111,7 +111,7 @@ def mlflow_client():
     rest_store.http_request = shim
     import mlflow
     mlflow.set_tracking_uri(os.environ["MLFLOW_TRACKING_URI"])
-    mlflow.set_experiment("5gprod-anomaly-sweep")
+    mlflow.set_experiment("houprod-anomaly-sweep")
     return mlflow
 
 

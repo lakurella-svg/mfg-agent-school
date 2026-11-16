@@ -1,4 +1,4 @@
-"""Feature pipeline for 5gprod telemetry: engineer -> offline parquet -> push online.
+"""Feature pipeline for houprod telemetry: engineer -> offline parquet -> push online.
 
 Steps (the pieces the revenueassurance notebooks used to do by hand, as a
 repeatable pipeline):
@@ -98,7 +98,7 @@ def _enable_model_tracing():
         import mlflow
 
         mlflow.set_tracking_uri(os.environ["MLFLOW_TRACKING_URI"])
-        mlflow.set_experiment(os.environ.get("MLFLOW_EXPERIMENT", "5gprod-anomaly"))
+        mlflow.set_experiment(os.environ.get("MLFLOW_EXPERIMENT", "houprod-anomaly"))
         mlflow.set_active_model(name=os.environ.get("LOGGED_MODEL_NAME", "anomaly-detector"))
         print("[trace] scoring traces -> LoggedModel 'anomaly-detector'")
         return mlflow

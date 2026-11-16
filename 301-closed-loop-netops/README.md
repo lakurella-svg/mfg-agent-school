@@ -140,7 +140,7 @@ calibrated regressor (`training/train_remediation_risk.py`,
 GradientBoosting, r² ≈ 0.97) that scores how risky it is to actuate a
 given playbook action on a given NF under the current incident state.
 301 no longer only *borrows* 101's anomaly verdict; it has its own
-model, trained on the real 5gprod per-minute KPIs, tracked in MLflow,
+model, trained on the real houprod per-minute KPIs, tracked in MLflow,
 registered and promoted (`netops-remediation-risk`), and served on
 KServe. Its target is a **documented computed proxy** —
 `base_disruptiveness[action] × load × severity`, all real measured

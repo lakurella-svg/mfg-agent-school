@@ -54,7 +54,7 @@
    "step": 5,
    "tab": "Develop & train · Model registry — versioned model",
    "image": "101-moc-assistant/images/rhoai/model-overview.png",
-   "caption": "The run logs one pyfunc model that routes each row to its NF's forest, registered as 5gprod-anomaly-isolationforest with full lineage.",
+   "caption": "The run logs one pyfunc model that routes each row to its NF's forest, registered as houprod-anomaly-isolationforest with full lineage.",
    "say": "Then the model itself: a versioned model, not a pickle in a bucket. The winning run logs a single model that routes each incoming row to the right network function's forest, and registers it under a proper name — five-G-prod anomaly isolation forest. Its lineage — the dataset, the feature source, the window, the train-test split — is all recorded in the parameters you see here. When the agent asks 'is this anomalous', it is calling a specific, auditable version of this model, and we can always answer 'which one, and how was it trained'."
   },
   {
@@ -70,7 +70,7 @@
    "step": 7,
    "tab": "Develop & train · Experiments — agent traces",
    "image": "101-moc-assistant/images/rhoai/model-traces.png",
-   "caption": "Every agent run lands as a full MLflow trace — the question, every tool call, tokens, latency — in the 101-noc-assistant experiment.",
+   "caption": "Every agent run lands as a full MLflow trace — the question, every tool call, tokens, latency — in the 101-moc-assistant experiment.",
    "say": "And traced reasoning. Every run of the assistant lands here as a full trace: the question it was asked, every tool call it made, the tokens it spent, and how long each step took. Three runs, three traces, each one openable turn by turn. This is the point most teams miss: the agent loop deserves the same observability as any production service. When the assistant says the A M F is anomalous, you open the trace and see exactly which feature read and which scoring call produced that verdict.",
    "cuts": [
     {"at": "the question it was asked", "image": "101-moc-assistant/images/rhoai/model-traces-highlight-request.png"},

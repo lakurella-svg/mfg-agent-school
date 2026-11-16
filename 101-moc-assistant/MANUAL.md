@@ -14,9 +14,9 @@ You do not have to deploy anything to study this course. The reference deploymen
 | RHOAI dashboard | `https://rh-ai.apps.rome.narlabs.io` or `.venice.` |
 | Agent runs and traces | RHOAI dashboard, Develop & train, Experiments, workspace `agent-school` |
 | Feature store | RHOAI dashboard, Feature store, project `fivegprod` |
-| Ray sweep results | Experiments, `5gprod-anomaly-sweep` |
+| Ray sweep results | Experiments, `houprod-anomaly-sweep` |
 | Workload metrics (Kueue) | Observe & monitor, Workload metrics, project `agent-school` |
-| The registered anomaly model | AI hub, Models, Registry, `5gprod-anomaly-isolationforest` |
+| The registered anomaly model | AI hub, Models, Registry, `houprod-anomaly-isolationforest` |
 | Everything Kubernetes | Console, project `agent-school` (Deployments, Jobs, ConfigMaps) |
 
 ## What you will build
@@ -41,18 +41,18 @@ flowchart LR
     UPF["UPF"] --> OTEL
   end
   OTEL --> PROM["Prometheus (metrics TSDB)"]
-  PROM -. "stand-in: data/*.csv (published 5gprod dataset)" .-> ENG
+  PROM -. "stand-in: data/*.csv (published houprod dataset)" .-> ENG
   subgraph RHOAI["RHOAI · Develop & train"]
     ENG["feature engineering<br/>feature_repo/ingest.py<br/>1h rolling mean/min/max per KPI"] --> OFF["Feast offline store<br/>parquet per NF (PVC)"]
     OFF --> TRAIN["IsolationForest training<br/>training/train_anomaly.py"]
     OFF --> SWEEP["contamination sweep<br/>training/ray_contamination_sweep.py<br/>Ray cluster, Kueue-admitted"]
-    TRAIN --> EXP["MLflow Experiments<br/>5gprod-anomaly-sweep"]
+    TRAIN --> EXP["MLflow Experiments<br/>houprod-anomaly-sweep"]
     SWEEP --> EXP
-    EXP --> REG["Model Registry<br/>5gprod-anomaly-isolationforest (versioned)"]
+    EXP --> REG["Model Registry<br/>houprod-anomaly-isolationforest (versioned)"]
   end
 ```
 
-The engineering step ([`feature_repo/ingest.py`](./feature_repo/ingest.py)) turns raw per-minute KPIs into 118 features across three feature views (`amf_kpis` 46, `smf_kpis` 34, `upf_kpis` 38): raw values plus 1-hour rolling mean/min/max plus an anomaly score and flag per NF. [`feature_repo/save_training_datasets.py`](./feature_repo/save_training_datasets.py) then persists three named SavedDatasets via point-in-time joins, so training data is a referenceable, versioned artifact instead of a loose file. Training sweeps IsolationForest contamination settings on a throwaway Ray cluster (admitted through the shared Kueue ClusterQueue), every run lands in MLflow, and the winning detector is registered as `5gprod-anomaly-isolationforest`. Note the honest detail visible in the sweep logs: `f1` prints 0.000 because the sweep is unlabeled — `rate_gap` is the tuning signal.
+The engineering step ([`feature_repo/ingest.py`](./feature_repo/ingest.py)) turns raw per-minute KPIs into 118 features across three feature views (`amf_kpis` 46, `smf_kpis` 34, `upf_kpis` 38): raw values plus 1-hour rolling mean/min/max plus an anomaly score and flag per NF. [`feature_repo/save_training_datasets.py`](./feature_repo/save_training_datasets.py) then persists three named SavedDatasets via point-in-time joins, so training data is a referenceable, versioned artifact instead of a loose file. Training sweeps IsolationForest contamination settings on a throwaway Ray cluster (admitted through the shared Kueue ClusterQueue), every run lands in MLflow, and the winning detector is registered as `houprod-anomaly-isolationforest`. Note the honest detail visible in the sweep logs: `f1` prints 0.000 because the sweep is unlabeled — `rate_gap` is the tuning signal.
 
 ### Loop 2 · Serving — use the truth
 
@@ -68,10 +68,10 @@ flowchart LR
   end
   ON --> T1
   ON --> T2
-  REG2["Model Registry<br/>5gprod-anomaly-isolationforest"] --> T2
+  REG2["Model Registry<br/>houprod-anomaly-isolationforest"] --> T2
   LOOP <--> LLM["vLLM on RHOAI (KServe)<br/>kimi-linear-48b-a3b, stateless"]
   LOOP --> ANS["structured NOC answer<br/>cites KPIs + alerts + runbook"]
-  LOOP --> TR["MLflow Traces<br/>experiment 101-noc-assistant<br/>every tool call + reasoning span"]
+  LOOP --> TR["MLflow Traces<br/>experiment 101-moc-assistant<br/>every tool call + reasoning span"]
 ```
 
 One agent run is one Job: the pod wakes, reads the live vectors through MCP tools ([`tools/lib.py`](./tools/lib.py), served by [`tools/telemetry_mcp.py`](./tools/telemetry_mcp.py)), scores them with the registry model, reasons via the in-cluster vLLM endpoint, prints its answer, and exits — no server, no session, no state left behind. The suspended `noc-sweep` CronJob is the same image on a 15-minute schedule. **Score control lives in the traces:** every run flushes its full tool-call and reasoning trace to the `101-moc-assistant` experiment, so anomaly scores and the evidence behind every answer are queryable platform data. In 101 this is the observability surface; course 201 adds the judge that grades those traces for evidence grounding, and 302 turns judging itself into a measured suite.
@@ -94,15 +94,15 @@ flowchart LR
 
 | Stage | Production component | In this course |
 |---|---|---|
-| Harvest | OTel exporters → Collector → Prometheus | **stand-in:** published 5gprod dataset in [`data/`](./data/) |
+| Harvest | OTel exporters → Collector → Prometheus | **stand-in:** published houprod dataset in [`data/`](./data/) |
 | Feature engineering | scheduled pipeline job | `feast-bootstrap` Job → [`feature_repo/ingest.py`](./feature_repo/ingest.py) |
 | Feature store | Feast offline (parquet, PVC) + online (latest vectors) | FeatureStore CR `fivegprod`, feature service `noc_telemetry` |
 | Training | IsolationForest per NF + Ray sweep | [`training/train_anomaly.py`](./training/train_anomaly.py), [`training/ray_contamination_sweep.py`](./training/ray_contamination_sweep.py) |
-| Tracking / registry | MLflow Experiments → Model Registry | experiments `5gprod-anomaly-sweep`, registered model `5gprod-anomaly-isolationforest` |
+| Tracking / registry | MLflow Experiments → Model Registry | experiments `houprod-anomaly-sweep`, registered model `houprod-anomaly-isolationforest` |
 | Serving (model) | registry model loaded as a tool | `detect_anomalies` in [`tools/lib.py`](./tools/lib.py) |
 | Serving (LLM) | stateless vLLM endpoint on KServe | `kimi-linear-48b-a3b` via the `llm-credentials` Secret |
 | Agent runtime | one run = one Job; scheduled = CronJob | [`deploy/ocp/job-ask.yaml`](./deploy/ocp/job-ask.yaml), `noc-sweep` CronJob |
-| Score control | traces per run, judged downstream | MLflow Traces in `101-noc-assistant` (judge arrives in course 201) |
+| Score control | traces per run, judged downstream | MLflow Traces in `101-moc-assistant` (judge arrives in course 201) |
 | Resolution | runbook-guided advisory | [`runbooks/`](./runbooks/), human executes |
 
 ## Prerequisites (verify before you start)
@@ -222,7 +222,7 @@ oc create configmap feast-saveds-src -n agent-school \
 
 **Do (Console):** Import YAML, paste `101-moc-assistant/deploy/ocp/job-ask.yaml` and add `namespace: agent-school`. (It uses `generateName`, so the console will accept it once; to re-run, paste it again. With a terminal: `oc create -f 101-moc-assistant/deploy/ocp/job-ask.yaml`.)
 
-**Expect:** the `noc-ask-...` pod completes in about a minute. Read its log: a structured NOC answer that cites live KPI and alert data. Then open RHOAI dashboard, Experiments: the agent's episode is flushed to the `101-noc-assistant` experiment as an MLflow **trace** (Traces tab), not a run — the runs list stays empty, and that is expected. In the replay portal you see the experiment card; browse the trace itself on a live cluster.
+**Expect:** the `noc-ask-...` pod completes in about a minute. Read its log: a structured NOC answer that cites live KPI and alert data. Then open RHOAI dashboard, Experiments: the agent's episode is flushed to the `101-moc-assistant` experiment as an MLflow **trace** (Traces tab), not a run — the runs list stays empty, and that is expected. In the replay portal you see the experiment card; browse the trace itself on a live cluster.
 
 ## Step 7: The distributed sweep (Ray + Kueue)
 
@@ -237,9 +237,9 @@ oc create configmap ray-sweep-src -n agent-school \
 
 **Console:** Import YAML, paste `101-moc-assistant/deploy/ocp/rome/rayjob-anomaly-sweep.yaml`.
 
-**Expect:** head and worker pods start (image pull can take a few minutes the first time), the RayJob reaches `SUCCEEDED`, results land in Experiments under `5gprod-anomaly-sweep` (`f1` prints 0.000 on this unlabeled sweep — `rate_gap` is the tuning signal, not f1), and Observe & monitor, Workload metrics shows the admitted workload. Head and worker pods stay around until the 24h TTL; that is by design.
+**Expect:** head and worker pods start (image pull can take a few minutes the first time), the RayJob reaches `SUCCEEDED`, results land in Experiments under `houprod-anomaly-sweep` (`f1` prints 0.000 on this unlabeled sweep — `rate_gap` is the tuning signal, not f1), and Observe & monitor, Workload metrics shows the admitted workload. Head and worker pods stay around until the 24h TTL; that is by design.
 
-Optionally register the trained detector in the model registry: AI hub, Models, Registry, register model `5gprod-anomaly-isolationforest` from the MLflow model (see the live Rome/Venice registry entry for the metadata fields we fill in). The registry is where a model stops being an experiment artifact and becomes a named, versioned, promotable asset other courses can reference.
+Optionally register the trained detector in the model registry: AI hub, Models, Registry, register model `houprod-anomaly-isolationforest` from the MLflow model (see the live Rome/Venice registry entry for the metadata fields we fill in). The registry is where a model stops being an experiment artifact and becomes a named, versioned, promotable asset other courses can reference.
 
 ## Troubleshooting
 

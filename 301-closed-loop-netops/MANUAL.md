@@ -27,7 +27,7 @@ The big idea of 301 is that **autonomy is earned through governance**: every cap
 
 ### Loop 1 · Trust domains + the quant signal
 
-The namespaces are the architecture: `agent-school` holds the agents, `fiveg-core` is the actuation target (the only thing the loop may touch), and `think-tank` models an external reasoning provider — separate ServiceAccounts, separate secrets, no shared objects. The infrastructure tier externalizes everything: loop state lives in the `loop-state` Redis (agents stay ephemeral), and the `mcp-playbook` gateway is the **only** door to the core. The quantitative half of the co-decision is 301's own model track: [`training/train_remediation_risk.py`](./training/train_remediation_risk.py) fits a GradientBoostingRegressor on 8,646 rows of real 5gprod KPIs (r² 0.9714, MAE 0.0235), registers `netops-remediation-risk`, and serves it on KServe behind the governed `/plan-score` route — Kuadrant AuthPolicy admits exactly two identities (`planning-agent`, `plan-judge-agent`), RateLimitPolicy caps the throughput. LLM judges are persuasive; a calibrated regressor trained on the real KPI series is not, and that is the point.
+The namespaces are the architecture: `agent-school` holds the agents, `fiveg-core` is the actuation target (the only thing the loop may touch), and `think-tank` models an external reasoning provider — separate ServiceAccounts, separate secrets, no shared objects. The infrastructure tier externalizes everything: loop state lives in the `loop-state` Redis (agents stay ephemeral), and the `mcp-playbook` gateway is the **only** door to the core. The quantitative half of the co-decision is 301's own model track: [`training/train_remediation_risk.py`](./training/train_remediation_risk.py) fits a GradientBoostingRegressor on 8,646 rows of real houprod KPIs (r² 0.9714, MAE 0.0235), registers `netops-remediation-risk`, and serves it on KServe behind the governed `/plan-score` route — Kuadrant AuthPolicy admits exactly two identities (`planning-agent`, `plan-judge-agent`), RateLimitPolicy caps the throughput. LLM judges are persuasive; a calibrated regressor trained on the real KPI series is not, and that is the point.
 
 ```mermaid
 flowchart LR
@@ -43,7 +43,7 @@ flowchart LR
   subgraph TD3["think-tank (external reasoner)"]
     TT["think-tank MCP"]
   end
-  KPI["real 5gprod KPIs (8646 rows)"] --> TRN["train_remediation_risk.py<br/>GBR · r2 0.9714"] --> REG["registry: netops-remediation-risk"] --> ISV["KServe scorer"]
+  KPI["real houprod KPIs (8646 rows)"] --> TRN["train_remediation_risk.py<br/>GBR · r2 0.9714"] --> REG["registry: netops-remediation-risk"] --> ISV["KServe scorer"]
   ISV --> GS["governed /plan-score<br/>Kuadrant AuthPolicy: planning-agent + plan-judge only"]
   P --> TT
   P --> GS

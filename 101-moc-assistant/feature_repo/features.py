@@ -1,4 +1,4 @@
-"""Feast feature definitions for the 5gprod telemetry (fenar/5gcore-prod).
+"""Feast feature definitions for the houprod telemetry (fenar/5gcore-prod).
 
 One entity (`nf`: amf | smf | upf) and one feature view per network
 function. Each view carries the raw per-minute KPIs plus 1-hour rolling

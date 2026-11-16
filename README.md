@@ -23,7 +23,7 @@ That replays a scripted agent episode over the real 5G core dataset, printing ev
 
 | Course | Example | Status | Source experiment | Teaching harness (code) | What it teaches |
 |--------|---------|--------|-------------------|-------------------------|-----------------|
-| [101](./101-moc-assistant/) | NOC Assistant | **working, QA-passed** | 5gprod, telco-sme | custom loop (OpenAI-compatible) | Agent loop, MCP tools, vLLM serving, tracing |
+| [101](./101-moc-assistant/) | NOC Assistant | **working, QA-passed** | houprod, telco-sme | custom loop (OpenAI-compatible) | Agent loop, MCP tools, vLLM serving, tracing |
 | [201](./201-rca-investigator/) | RCA Investigator | **working, QA-passed** | llm-rca | custom two-phase loop (OpenAI-compatible) | RAG as a skill backend, small-vs-large model routing, evidence-grounding judge |
 | [202](./202-fraud-triage/) | Fraud Triage | **working, live on Rome + Venice** | revenueassurance | LangGraph | Train-serve pipeline, classic ML model as a governed tool, human-approval gate |
 | [301](./301-closed-loop-netops/) | Closed-Loop NetOps | **working, live-proven on Rome + Venice** | autonet, agentic | LangGraph + A2A | Multi-agent closed loop, governed actuation (Kuadrant), quant + qual co-decision on the plan |
@@ -58,7 +58,7 @@ Every course folder follows the same shape, so once you have read 101 you can na
 
 ```
 agent-school/
-├── 101-moc-assistant/        # working, QA-passed: agent + MCP tools + real 5gprod data + runbooks
+├── 101-moc-assistant/        # working, QA-passed: agent + MCP tools + real houprod data + runbooks
 │   ├── agent/                #   the teaching harness (readable tool-calling loop)
 │   ├── tools/                #   skills: in-process lib + stdio MCP servers
 │   ├── data/  runbooks/      #   real Telco-AIX dataset and matching runbooks

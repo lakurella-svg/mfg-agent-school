@@ -11,7 +11,7 @@ over them, and writes an RCA where every claim cites a retrieved record.
 
 **Source experiment:** [llm-rca](https://github.com/open-experiments/Telco-AIX/tree/main/llm-rca)
 (Classic-AI → GenAI model chaining with FAISS log association), reusing the
-5gprod dataset and the per-NF vector stores its `preprocess_data.py` builds.
+houprod dataset and the per-NF vector stores its `preprocess_data.py` builds.
 
 **Harness:** custom two-phase loop (teaching; same OpenAI-compatible client
 101 uses, here split into investigate and write phases); Hermes Agent track

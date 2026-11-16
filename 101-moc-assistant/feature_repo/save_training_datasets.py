@@ -100,8 +100,8 @@ def main() -> None:
         fs.create_saved_dataset(
             from_=job, name=f"{nf}_anomaly_training",
             storage=SavedDatasetFileStorage(path=outp), allow_overwrite=True,
-            tags={"course": "101-noc-assistant",
-                  "consumer": "5gprod-anomaly-isolationforest",
+            tags={"course": "101-moc-assistant",
+                  "consumer": "houprod-anomaly-isolationforest",
                   "purpose": "point-in-time correct IsolationForest "
                              "training set"})
         print(f"[saved] {nf}: {len(out)} rows -> {outp}")

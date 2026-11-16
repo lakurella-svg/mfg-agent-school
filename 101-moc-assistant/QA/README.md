@@ -1,7 +1,7 @@
 # 101 · QA Evidence Pack
 
 Everything in this folder is captured output from real runs against the real
-5gprod dataset; nothing is hand-written. Live runs hit Red Hat OpenShift AI
+houprod dataset; nothing is hand-written. Live runs hit Red Hat OpenShift AI
 Model-as-a-Service (LiteLLM gateway) with model `Qwen3.6-35B-A3B`.
 
 ## Test matrix
@@ -91,7 +91,7 @@ rome overlay's `mlflow-tracking` ConfigMap in env: `_enable_mlflow()` read
 the pod ServiceAccount token, added the `X-MLFLOW-WORKSPACE: agent-school`
 header, and `mlflow.openai.autolog()` exported one trace per LLM call —
 3 traces (3 turns, 6 tool calls) now visible in the RHOAI dashboard under
-**Experiments → 101-noc-assistant** (GenAI view: trace waterfall, token
+**Experiments → 101-moc-assistant** (GenAI view: trace waterfall, token
 usage, latency percentiles, error rate). Log: `rome_mlflow_tracked_run.log`;
 the trace line `mlflow autolog enabled -> ...` is the hook engaging.
 

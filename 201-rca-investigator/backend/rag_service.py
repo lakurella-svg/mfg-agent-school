@@ -1,4 +1,4 @@
-"""RAG service backend (pattern 2): retrieval over the real 5gprod corpus.
+"""RAG service backend (pattern 2): retrieval over the real houprod corpus.
 
 This is the skill backend the RCA agent calls over HTTP; the index never
 lives inside the agent pod. The corpus is built exactly the way the source

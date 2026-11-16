@@ -15,7 +15,7 @@
 # SubjectAccessReview then fails with PERMISSION_DENIED unless the
 # namespace's SA *group* has edit — apply mlflow-workspace-rbac.yaml
 # (in this directory) before running. Results land in Experiments ->
-# 5gprod-anomaly-sweep. Venice note: same manifest; on the 96G card you
+# houprod-anomaly-sweep. Venice note: same manifest; on the 96G card you
 # can add nvidia.com/gpu to a worker group for GPU-accelerated sweeps.
 apiVersion: ray.io/v1
 kind: RayJob

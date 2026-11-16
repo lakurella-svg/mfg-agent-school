@@ -28,7 +28,7 @@ filesystem_policy:
     - /app
     - /etc
     - /var/log
-    - /sandbox/course/data        # 5gprod KPI CSVs (the offline dataset)
+    - /sandbox/course/data        # houprod KPI CSVs (the offline dataset)
     - /sandbox/course/runbooks    # NOC runbooks the agent cites
     - /sandbox/course/tools       # skill code: readable, never writable
   read_write:

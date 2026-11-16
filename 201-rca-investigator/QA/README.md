@@ -1,6 +1,6 @@
 # 201 · QA Evidence Pack
 
-Captured output from real runs: real 5gprod corpus (4,330 documents: 4,323
+Captured output from real runs: real houprod corpus (4,330 documents: 4,323
 telemetry rows + 7 alerts), real RAG service backend, live runs against Red
 Hat OpenShift AI Model-as-a-Service (LiteLLM gateway, `Qwen3.6-35B-A3B`).
 

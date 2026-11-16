@@ -3,7 +3,7 @@
 # co-decision. Registers `netops-remediation-risk` v1 in the workspace
 # MLflow. See ../../../training/train_remediation_risk.py.
 #
-# The training substrate is 101's real 5gprod per-minute KPI series
+# The training substrate is 101's real houprod per-minute KPI series
 # (amf/smf/upf) + the labelled alert windows. It is mounted as a gzipped
 # ConfigMap rather than pulled from a URL: the four files total ~860 KB
 # of text (over the 1 MB ConfigMap ceiling once base64-inflated), but

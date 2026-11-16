@@ -303,7 +303,7 @@ def main():
             "weights": "Z0=%.1f,Wb=%.1f,Wl=%.1f,Ws=%.1f,Wbs=%.1f" % (
                 Z0, W_BASE, W_LOAD, W_SEV, W_BASESEV),
             "noise_sd": NOISE_SD,
-            "dataset": "Telco-AIX 5gprod (amf/smf/upf per-minute KPIs)"})
+            "dataset": "Telco-AIX houprod (amf/smf/upf per-minute KPIs)"})
         mlflow.log_metrics(metrics)
         mlflow.pyfunc.log_model(
             name="remediation-risk-scorer",
