@@ -95,9 +95,9 @@ NF_KPIS = {
     "amf": ["capacity_utilization_pct", "buffer_occupancy_pct", "registration_rate",
             "station_checkin_success_rate", "job_setup_success_rate"],
     "smf": ["capacity_utilization_pct", "buffer_occupancy_pct",
-            "session_establishment_rate", "session_success_rate"],
-    "upf": ["capacity_utilization_pct", "buffer_occupancy_pct", "packet_drop_rate",
-            "latency_ms", "throughput_mbps"],
+            "job_release_rate", "job_completion_success_rate"],
+    "upf": ["capacity_utilization_pct", "buffer_occupancy_pct", "scrap_rate",
+            "cycle_time", "line_throughput"],
 }
 
 

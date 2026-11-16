@@ -84,14 +84,14 @@ NOISE_SD = 0.03                 # outcome variance: real remediations are
 HEALTH = {
     "amf": ["station_checkin_success_rate", "station_auth_success_rate",
             "control_handshake_success_rate"],
-    "smf": ["session_success_rate"],
-    "upf": ["qos_flow_success_rate"],
+    "smf": ["job_completion_success_rate"],
+    "upf": ["spec_compliance_rate"],
 }
-DEGRADE = {"upf": ["packet_drop_rate", "latency_ms"]}  # higher = worse
+DEGRADE = {"upf": ["scrap_rate", "cycle_time"]}  # higher = worse
 UTIL = {
     "amf": ["capacity_utilization_pct", "buffer_occupancy_pct"],
     "smf": ["capacity_utilization_pct", "buffer_occupancy_pct"],
-    "upf": ["capacity_utilization_pct", "buffer_occupancy_pct", "buffer_utilization"],
+    "upf": ["capacity_utilization_pct", "buffer_occupancy_pct", "conveyor_fill_pct"],
 }
 
 FEATURES = ["action_base", "target_util", "target_headroom", "severity",
@@ -136,7 +136,7 @@ def _nf_state(frames):
             "health_ratio": health,
             "cpu": df.get("capacity_utilization_pct", 0) / 100.0,
             "mem": df.get("buffer_occupancy_pct", 0) / 100.0,
-            "buffer": df.get("buffer_utilization",
+            "buffer": df.get("conveyor_fill_pct",
                              pd.Series(0.0, index=df.index)) / 100.0,
         })
     return state

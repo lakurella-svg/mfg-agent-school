@@ -29,14 +29,14 @@ NF_KPIS = {
         "line_assignment_success_rate", "nas_security_success_rate", "control_handshake_success_rate",
     ],
     "smf": [
-        "capacity_utilization_pct", "buffer_occupancy_pct", "session_establishment_rate",
-        "n4_message_rate", "session_modification_rate", "policy_installation_rate",
-        "pfcp_message_rate", "session_success_rate",
+        "capacity_utilization_pct", "buffer_occupancy_pct", "job_release_rate",
+        "line_command_rate", "job_change_rate", "recipe_apply_rate",
+        "program_download_rate", "job_completion_success_rate",
     ],
     "upf": [
-        "capacity_utilization_pct", "buffer_occupancy_pct", "packet_processing_rate",
-        "tunnel_establishment_rate", "buffer_utilization", "qos_flow_success_rate",
-        "throughput_mbps", "packet_drop_rate", "latency_ms",
+        "capacity_utilization_pct", "buffer_occupancy_pct", "units_processed_rate",
+        "lot_start_rate", "conveyor_fill_pct", "spec_compliance_rate",
+        "line_throughput", "scrap_rate", "cycle_time",
     ],
 }
 

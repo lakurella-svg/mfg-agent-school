@@ -14,7 +14,7 @@ degrade as the surge propagates.
    against the pre-alert baseline (the alert feed carries before/during deltas).
 2. Check whether station_auth_success_rate dropped more than 5 percent;
    if so the storm is saturating AUSF/UDM paths, not just the AMF.
-3. Correlate with SMF session_establishment_rate to see if the storm is
+3. Correlate with SMF job_release_rate to see if the storm is
    propagating to session setup.
 
 ## Remediation

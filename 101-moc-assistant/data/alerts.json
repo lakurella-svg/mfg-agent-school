@@ -72,32 +72,32 @@
         "before": {
           "capacity_utilization_pct": 33.62600370986668,
           "buffer_occupancy_pct": 43.500845606301155,
-          "session_establishment_rate": 93.29185607699235,
-          "n4_message_rate": 150.93469248232662,
-          "session_modification_rate": 47.81848076568794,
-          "policy_installation_rate": 95.45766688962148,
-          "pfcp_message_rate": 184.3792903018621,
-          "session_success_rate": 101.87665620352476
+          "job_release_rate": 93.29185607699235,
+          "line_command_rate": 150.93469248232662,
+          "job_change_rate": 47.81848076568794,
+          "recipe_apply_rate": 95.45766688962148,
+          "program_download_rate": 184.3792903018621,
+          "job_completion_success_rate": 101.87665620352476
         },
         "during": {
           "capacity_utilization_pct": 33.62600370986668,
           "buffer_occupancy_pct": 43.500845606301155,
-          "session_establishment_rate": 76.68378838643645,
-          "n4_message_rate": 150.93469248232662,
-          "session_modification_rate": 47.81848076568794,
-          "policy_installation_rate": 95.45766688962148,
-          "pfcp_message_rate": 184.3792903018621,
-          "session_success_rate": 101.87665620352476
+          "job_release_rate": 76.68378838643645,
+          "line_command_rate": 150.93469248232662,
+          "job_change_rate": 47.81848076568794,
+          "recipe_apply_rate": 95.45766688962148,
+          "program_download_rate": 184.3792903018621,
+          "job_completion_success_rate": 101.87665620352476
         },
         "delta_percent": {
           "capacity_utilization_pct": 0.0,
           "buffer_occupancy_pct": 0.0,
-          "session_establishment_rate": -17.80226955378561,
-          "n4_message_rate": 0.0,
-          "session_modification_rate": 0.0,
-          "policy_installation_rate": 0.0,
-          "pfcp_message_rate": 0.0,
-          "session_success_rate": 0.0
+          "job_release_rate": -17.80226955378561,
+          "line_command_rate": 0.0,
+          "job_change_rate": 0.0,
+          "recipe_apply_rate": 0.0,
+          "program_download_rate": 0.0,
+          "job_completion_success_rate": 0.0
         }
       }
     },
@@ -112,35 +112,35 @@
         "before": {
           "capacity_utilization_pct": 27.754373414452107,
           "buffer_occupancy_pct": 34.478876119337,
-          "packet_processing_rate": 6789.798655697712,
-          "tunnel_establishment_rate": 60.08089611104812,
-          "buffer_utilization": 21.392090881552956,
-          "qos_flow_success_rate": 72.33481071781303,
-          "throughput_mbps": 696.8086848773667,
-          "packet_drop_rate": 0.0684534891611026,
-          "latency_ms": 7.101272075145593
+          "units_processed_rate": 6789.798655697712,
+          "lot_start_rate": 60.08089611104812,
+          "conveyor_fill_pct": 21.392090881552956,
+          "spec_compliance_rate": 72.33481071781303,
+          "line_throughput": 696.8086848773667,
+          "scrap_rate": 0.0684534891611026,
+          "cycle_time": 7.101272075145593
         },
         "during": {
           "capacity_utilization_pct": 27.754373414452107,
           "buffer_occupancy_pct": 34.478876119337,
-          "packet_processing_rate": 5595.960519112227,
-          "tunnel_establishment_rate": 60.08089611104812,
-          "buffer_utilization": 20.116815899209243,
-          "qos_flow_success_rate": 72.33481071781303,
-          "throughput_mbps": 696.8086848773667,
-          "packet_drop_rate": 0.0684534891611026,
-          "latency_ms": 5.690316457435175
+          "units_processed_rate": 5595.960519112227,
+          "lot_start_rate": 60.08089611104812,
+          "conveyor_fill_pct": 20.116815899209243,
+          "spec_compliance_rate": 72.33481071781303,
+          "line_throughput": 696.8086848773667,
+          "scrap_rate": 0.0684534891611026,
+          "cycle_time": 5.690316457435175
         },
         "delta_percent": {
           "capacity_utilization_pct": 0.0,
           "buffer_occupancy_pct": 0.0,
-          "packet_processing_rate": -17.582820892393713,
-          "tunnel_establishment_rate": 0.0,
-          "buffer_utilization": -5.96143214520195,
-          "qos_flow_success_rate": 0.0,
-          "throughput_mbps": 0.0,
-          "packet_drop_rate": 0.0,
-          "latency_ms": -19.869054484600767
+          "units_processed_rate": -17.582820892393713,
+          "lot_start_rate": 0.0,
+          "conveyor_fill_pct": -5.96143214520195,
+          "spec_compliance_rate": 0.0,
+          "line_throughput": 0.0,
+          "scrap_rate": 0.0,
+          "cycle_time": -19.869054484600767
         }
       }
     },
@@ -155,32 +155,32 @@
         "before": {
           "capacity_utilization_pct": 34.56565874141229,
           "buffer_occupancy_pct": 45.22456588714935,
-          "session_establishment_rate": 91.50267615823836,
-          "n4_message_rate": 150.94377638219345,
-          "session_modification_rate": 49.26073433803391,
-          "policy_installation_rate": 93.7634777384454,
-          "pfcp_message_rate": 180.0868430707732,
-          "session_success_rate": 96.20790067231906
+          "job_release_rate": 91.50267615823836,
+          "line_command_rate": 150.94377638219345,
+          "job_change_rate": 49.26073433803391,
+          "recipe_apply_rate": 93.7634777384454,
+          "program_download_rate": 180.0868430707732,
+          "job_completion_success_rate": 96.20790067231906
         },
         "during": {
           "capacity_utilization_pct": 34.56565874141229,
           "buffer_occupancy_pct": 45.22456588714935,
-          "session_establishment_rate": 77.75559794633287,
-          "n4_message_rate": 124.27332674200443,
-          "session_modification_rate": 49.26073433803391,
-          "policy_installation_rate": 93.7634777384454,
-          "pfcp_message_rate": 180.0868430707732,
-          "session_success_rate": 96.20790067231906
+          "job_release_rate": 77.75559794633287,
+          "line_command_rate": 124.27332674200443,
+          "job_change_rate": 49.26073433803391,
+          "recipe_apply_rate": 93.7634777384454,
+          "program_download_rate": 180.0868430707732,
+          "job_completion_success_rate": 96.20790067231906
         },
         "delta_percent": {
           "capacity_utilization_pct": 0.0,
           "buffer_occupancy_pct": 0.0,
-          "session_establishment_rate": -15.023689786003903,
-          "n4_message_rate": -17.66912838635941,
-          "session_modification_rate": 0.0,
-          "policy_installation_rate": 0.0,
-          "pfcp_message_rate": 0.0,
-          "session_success_rate": 0.0
+          "job_release_rate": -15.023689786003903,
+          "line_command_rate": -17.66912838635941,
+          "job_change_rate": 0.0,
+          "recipe_apply_rate": 0.0,
+          "program_download_rate": 0.0,
+          "job_completion_success_rate": 0.0
         }
       }
     },
@@ -195,32 +195,32 @@
         "before": {
           "capacity_utilization_pct": 35.52215982467392,
           "buffer_occupancy_pct": 43.60936249743776,
-          "session_establishment_rate": 91.06591276731235,
-          "n4_message_rate": 154.36119858281208,
-          "session_modification_rate": 48.84531877677638,
-          "policy_installation_rate": 96.07675543656174,
-          "pfcp_message_rate": 180.0971679854222,
-          "session_success_rate": 99.25431245197626
+          "job_release_rate": 91.06591276731235,
+          "line_command_rate": 154.36119858281208,
+          "job_change_rate": 48.84531877677638,
+          "recipe_apply_rate": 96.07675543656174,
+          "program_download_rate": 180.0971679854222,
+          "job_completion_success_rate": 99.25431245197626
         },
         "during": {
           "capacity_utilization_pct": 33.41821624882961,
           "buffer_occupancy_pct": 43.60936249743776,
-          "session_establishment_rate": 69.45834828461238,
-          "n4_message_rate": 122.10681432951124,
-          "session_modification_rate": 48.84531877677638,
-          "policy_installation_rate": 96.07675543656174,
-          "pfcp_message_rate": 180.0971679854222,
-          "session_success_rate": 99.25431245197626
+          "job_release_rate": 69.45834828461238,
+          "line_command_rate": 122.10681432951124,
+          "job_change_rate": 48.84531877677638,
+          "recipe_apply_rate": 96.07675543656174,
+          "program_download_rate": 180.0971679854222,
+          "job_completion_success_rate": 99.25431245197626
         },
         "delta_percent": {
           "capacity_utilization_pct": -5.9229044242487205,
           "buffer_occupancy_pct": 0.0,
-          "session_establishment_rate": -23.72739022328879,
-          "n4_message_rate": -20.895396349230168,
-          "session_modification_rate": 0.0,
-          "policy_installation_rate": 0.0,
-          "pfcp_message_rate": 0.0,
-          "session_success_rate": 0.0
+          "job_release_rate": -23.72739022328879,
+          "line_command_rate": -20.895396349230168,
+          "job_change_rate": 0.0,
+          "recipe_apply_rate": 0.0,
+          "program_download_rate": 0.0,
+          "job_completion_success_rate": 0.0
         }
       }
     },
@@ -284,35 +284,35 @@
         "before": {
           "capacity_utilization_pct": 40.83992437339822,
           "buffer_occupancy_pct": 52.26398505602119,
-          "packet_processing_rate": 10199.83095027114,
-          "tunnel_establishment_rate": 84.88359221124843,
-          "buffer_utilization": 29.925129223164657,
-          "qos_flow_success_rate": 100.49847709063083,
-          "throughput_mbps": 989.2744012246251,
-          "packet_drop_rate": 0.10501906450785589,
-          "latency_ms": 9.665805310771793
+          "units_processed_rate": 10199.83095027114,
+          "lot_start_rate": 84.88359221124843,
+          "conveyor_fill_pct": 29.925129223164657,
+          "spec_compliance_rate": 100.49847709063083,
+          "line_throughput": 989.2744012246251,
+          "scrap_rate": 0.10501906450785589,
+          "cycle_time": 9.665805310771793
         },
         "during": {
           "capacity_utilization_pct": 40.83992437339822,
           "buffer_occupancy_pct": 52.26398505602119,
-          "packet_processing_rate": 10199.83095027114,
-          "tunnel_establishment_rate": 71.71286478876736,
-          "buffer_utilization": 29.925129223164657,
-          "qos_flow_success_rate": 100.49847709063083,
-          "throughput_mbps": 989.2744012246251,
-          "packet_drop_rate": 0.10501906450785589,
-          "latency_ms": 9.665805310771793
+          "units_processed_rate": 10199.83095027114,
+          "lot_start_rate": 71.71286478876736,
+          "conveyor_fill_pct": 29.925129223164657,
+          "spec_compliance_rate": 100.49847709063083,
+          "line_throughput": 989.2744012246251,
+          "scrap_rate": 0.10501906450785589,
+          "cycle_time": 9.665805310771793
         },
         "delta_percent": {
           "capacity_utilization_pct": 0.0,
           "buffer_occupancy_pct": 0.0,
-          "packet_processing_rate": 0.0,
-          "tunnel_establishment_rate": -15.51622295826417,
-          "buffer_utilization": 0.0,
-          "qos_flow_success_rate": 0.0,
-          "throughput_mbps": 0.0,
-          "packet_drop_rate": 0.0,
-          "latency_ms": 0.0
+          "units_processed_rate": 0.0,
+          "lot_start_rate": -15.51622295826417,
+          "conveyor_fill_pct": 0.0,
+          "spec_compliance_rate": 0.0,
+          "line_throughput": 0.0,
+          "scrap_rate": 0.0,
+          "cycle_time": 0.0
         }
       }
     }
