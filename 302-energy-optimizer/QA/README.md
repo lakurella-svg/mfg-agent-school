@@ -18,4 +18,4 @@ added here must include wire-level evidence.
 | 3 | Live agent run vs model endpoint | trace log + wire JSONL (LLM_WIRE_LOG) | pending |
 | 4 | External tool / model call traces (request + response bodies, auth redacted) | wire JSONL | pending |
 
-See ../../101-noc-assistant/QA/ for the reference pack format.
+See ../../101-moc-assistant/QA/ for the reference pack format.

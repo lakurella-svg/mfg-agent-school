@@ -23,7 +23,7 @@ A narrated walkthrough (6:29) — the problem, then the step-by-step agentic
 solution over the live RHOAI portal on our reference cluster called Venice.
 Click the poster to play or download:
 
-[![101 · NOC Assistant — narrated walkthrough](./images/walkthrough-poster.png)](./images/101-noc-assistant.mp4)
+[![101 · NOC Assistant — narrated walkthrough](./images/walkthrough-poster.png)](./images/101-moc-assistant.mp4)
 
 ## Architecture
 

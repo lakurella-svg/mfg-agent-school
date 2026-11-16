@@ -4,7 +4,7 @@ This folder is deliberately empty of results. The course claims demonstrated
 constraint, so until a real sandbox refuses a real access, there is nothing
 here to read. The matrix below is the plan, and every row is `pending`.
 
-Format follows [101's pack](../../101-noc-assistant/QA/README.md), which is
+Format follows [101's pack](../../101-moc-assistant/QA/README.md), which is
 the reference bar: captured output only, nothing hand-written, wire-level
 evidence for anything that crosses a network boundary.
 

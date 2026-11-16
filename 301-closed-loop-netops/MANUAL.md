@@ -166,7 +166,7 @@ oc create configmap llama-stack-config   -n agent-school --from-file=run.yaml=..
 **Do:**
 
 ```
-tar -czf /tmp/remdata.tgz -C ../101-noc-assistant/data \
+tar -czf /tmp/remdata.tgz -C ../101-moc-assistant/data \
   amf_metrics.csv smf_metrics.csv upf_metrics.csv alerts.json
 oc create configmap remediation-train-data -n agent-school --from-file=data.tgz=/tmp/remdata.tgz
 ```

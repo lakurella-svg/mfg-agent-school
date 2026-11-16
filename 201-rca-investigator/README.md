@@ -118,7 +118,7 @@ python3 agent/rca_agent.py "Produce an RCA for the most severe current incident.
 The report lands in `reports/` with record-id citations. Knobs:
 `RCA_MAX_TURNS` (investigation budget), `RCA_REPORT_MAX_TOKENS` (report
 budget), `RCA_DISABLE_THINKING` (Qwen hybrid-reasoning off for the write-up;
-see QA/README findings). Requires `../101-noc-assistant/data/` (ships with
+see QA/README findings). Requires `../101-moc-assistant/data/` (ships with
 the repo) or set `DATA_DIR`.
 
 The retriever is TF-IDF for dependency-light classrooms; the source llm-rca

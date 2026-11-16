@@ -6,7 +6,7 @@
 > or in the interactive labs until [QA/](./QA/) holds real evidence. See
 > [Why this status line exists](#why-this-status-line-exists).
 
-The same NOC assistant as [101](../101-noc-assistant/), with the same skills,
+The same NOC assistant as [101](../101-moc-assistant/), with the same skills,
 answering the same question — inside a sandbox that decides what it may touch.
 101 proves an agent can do the work. 102 proves the blast radius when it
 misbehaves, and that is a different claim needing different evidence.
@@ -96,5 +96,5 @@ What is blocking, honestly: on the Venice reference cluster both GPUs are
 currently held by an unrelated benchmark, which leaves the shared
 `kimi-linear-48b-a3b` endpoint `READY=False`, so a live agent run has no model
 to reason with. The labs are written; the capture is scheduled. When it lands,
-this section is replaced by a test matrix like [101's](../101-noc-assistant/QA/README.md),
+this section is replaced by a test matrix like [101's](../101-moc-assistant/QA/README.md),
 the roadmap's row 3 moves off *Skipped*, and the course joins the site.

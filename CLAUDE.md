@@ -17,7 +17,7 @@ Each course is independent — install and run from inside its directory.
 
 ```bash
 # 101 / 201: offline deterministic episodes (no model endpoint needed)
-cd 101-noc-assistant && pip install -r requirements.txt
+cd 101-moc-assistant && pip install -r requirements.txt
 python3 agent/noc_agent.py --offline "What is wrong in the core right now?"
 python3 agent/noc_agent.py "..."                     # live: needs LLM_BASE_URL/LLM_API_KEY/LLM_MODEL
 
@@ -47,7 +47,7 @@ node docs/tests/portal-core.test.js                   # a single suite (needs BA
 ```bash
 python3 video/sync-durations.py --check               # site/tests/READMEs vs mp4 durations
 python3 docs/portal/build-tapes.py 101 venice shared/tapes/venice-tape-raw.json.gz \
-    101-noc-assistant/MANUAL.md docs/portal/tapes/101-venice.json
+    101-moc-assistant/MANUAL.md docs/portal/tapes/101-venice.json
 ```
 
 ## Architecture

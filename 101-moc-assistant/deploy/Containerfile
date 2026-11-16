@@ -1,6 +1,6 @@
 # 101 NOC Assistant — agent + MCP servers + real dataset in one image.
 # Build from the COURSE directory:
-#   podman build -f deploy/Containerfile -t agent-school/101-noc-assistant .
+#   podman build -f deploy/Containerfile -t agent-school/101-moc-assistant .
 FROM registry.access.redhat.com/ubi9/python-312:latest
 
 WORKDIR /opt/app-root/src

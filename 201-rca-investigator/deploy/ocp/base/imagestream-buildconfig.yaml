@@ -16,7 +16,7 @@ spec:
     type: Git
     git:
       # adjust to your fork; context is the repo root (image needs 101 data)
-      uri: https://github.com/open-experiments/agent-school.git
+      uri: https://github.com/lakurella-svg/mfg-agent-school.git
       ref: main
   strategy:
     type: Docker

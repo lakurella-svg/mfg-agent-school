@@ -95,7 +95,7 @@ const IDS = ['101','201','202','301','302'];
           archSrc: img && img.getAttribute('src'),
         };
       }, id);
-      const dir = { '101': '101-noc-assistant', '201': '201-rca-investigator', '202': '202-fraud-triage', '301': '301-closed-loop-netops', '302': '302-energy-optimizer' }[id];
+      const dir = { '101': '101-moc-assistant', '201': '201-rca-investigator', '202': '202-fraud-triage', '301': '301-closed-loop-netops', '302': '302-energy-optimizer' }[id];
       const okLinks = st.links.length === 4
         && st.links[0].endsWith(`/tree/main/${dir}`)
         && st.links[1].includes(`${dir}.mp4`)

@@ -12,7 +12,7 @@ Run from the repo root after `python3 video/produce.py video/specs/<c>.json`:
 """
 import json, re, subprocess, sys
 
-DIRS = {'101': '101-noc-assistant', '201': '201-rca-investigator', '202': '202-fraud-triage',
+DIRS = {'101': '101-moc-assistant', '201': '201-rca-investigator', '202': '202-fraud-triage',
         '301': '301-closed-loop-netops', '302': '302-energy-optimizer'}
 
 def mmss(path):

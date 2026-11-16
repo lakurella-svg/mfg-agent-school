@@ -74,7 +74,7 @@ flowchart LR
   LOOP --> TR["MLflow Traces<br/>experiment 101-noc-assistant<br/>every tool call + reasoning span"]
 ```
 
-One agent run is one Job: the pod wakes, reads the live vectors through MCP tools ([`tools/lib.py`](./tools/lib.py), served by [`tools/telemetry_mcp.py`](./tools/telemetry_mcp.py)), scores them with the registry model, reasons via the in-cluster vLLM endpoint, prints its answer, and exits — no server, no session, no state left behind. The suspended `noc-sweep` CronJob is the same image on a 15-minute schedule. **Score control lives in the traces:** every run flushes its full tool-call and reasoning trace to the `101-noc-assistant` experiment, so anomaly scores and the evidence behind every answer are queryable platform data. In 101 this is the observability surface; course 201 adds the judge that grades those traces for evidence grounding, and 302 turns judging itself into a measured suite.
+One agent run is one Job: the pod wakes, reads the live vectors through MCP tools ([`tools/lib.py`](./tools/lib.py), served by [`tools/telemetry_mcp.py`](./tools/telemetry_mcp.py)), scores them with the registry model, reasons via the in-cluster vLLM endpoint, prints its answer, and exits — no server, no session, no state left behind. The suspended `noc-sweep` CronJob is the same image on a 15-minute schedule. **Score control lives in the traces:** every run flushes its full tool-call and reasoning trace to the `101-moc-assistant` experiment, so anomaly scores and the evidence behind every answer are queryable platform data. In 101 this is the observability surface; course 201 adds the judge that grades those traces for evidence grounding, and 302 turns judging itself into a measured suite.
 
 ### Loop 3 · Resolution — act on the truth
 
@@ -177,11 +177,11 @@ Note the predictor Service is headless, so the port `:8080` in the URL is mandat
 
 **Why:** three objects, three lessons. The **ServiceAccount** is the agent's identity: the agent never runs as `default`, because identity is the hook every governance mechanism (MLflow workspace auth, NetworkPolicies, audit) keys off. The **ImageStream/BuildConfig** turn the course source into a container the OpenShift-native way: the cluster clones the public repo and builds the Containerfile itself, so no student laptop needs Docker. The **CronJob** shows the "continuous agent without a product harness" pattern: a NOC sweep every 15 minutes is just a schedule on the same image. It ships suspended so applying it costs no tokens until you decide otherwise.
 
-**Do (Console):** Import YAML, paste the contents of these three files from `101-noc-assistant/deploy/ocp/base/`, in order: `serviceaccount.yaml`, `imagestream-buildconfig.yaml`, `cronjob-noc-sweep.yaml`. Add `namespace: agent-school` under each `metadata:` if you paste them raw.
+**Do (Console):** Import YAML, paste the contents of these three files from `101-moc-assistant/deploy/ocp/base/`, in order: `serviceaccount.yaml`, `imagestream-buildconfig.yaml`, `cronjob-noc-sweep.yaml`. Add `namespace: agent-school` under each `metadata:` if you paste them raw.
 
-`oc` fallback (this also generates Step 2's objects): `oc apply -k 101-noc-assistant/deploy/ocp/rome`
+`oc` fallback (this also generates Step 2's objects): `oc apply -k 101-moc-assistant/deploy/ocp/rome`
 
-Then start the build. **Console:** Builds, BuildConfigs, `noc-assistant`, Actions, Start build. Watch the log; it clones `github.com/open-experiments/agent-school` and builds `deploy/Containerfile`.
+Then start the build. **Console:** Builds, BuildConfigs, `noc-assistant`, Actions, Start build. Watch the log; it clones `github.com/lakurella-svg/mfg-agent-school` and builds `deploy/Containerfile`.
 
 **Expect:** Build `noc-assistant-1` reaches **Complete** (2 to 5 minutes). The CronJob `noc-sweep` exists but is **suspended**; leave it that way for now.
 
@@ -189,7 +189,7 @@ Then start the build. **Console:** Builds, BuildConfigs, `noc-assistant`, Action
 
 **Why:** this step grants and declares, it runs nothing. The two RBAC files let the agent's identity (and, for Ray later, the whole SA group of the namespace) pass MLflow's workspace SubjectAccessReview; without them tracking calls are denied, which is the platform proving that experiment data is governed by the same RBAC as everything else. The **LocalQueue** connects this namespace to the shared ClusterQueue so batch work here is admitted, counted, and visible in Workload metrics. The **FeatureStore CR** asks the feast operator to stand up a real feature-store service (online store + registry, each on its own PVC): the agent will not read files, it will query a service, which is what separates "demo with CSVs" from "platform with a data layer".
 
-**Do (Console):** Import YAML, paste from `101-noc-assistant/deploy/ocp/rome/`: `mlflow-rbac.yaml`, `mlflow-workspace-rbac.yaml`, `kueue.yaml`, `featurestore-fivegprod.yaml` (add `namespace: agent-school` where missing).
+**Do (Console):** Import YAML, paste from `101-moc-assistant/deploy/ocp/rome/`: `mlflow-rbac.yaml`, `mlflow-workspace-rbac.yaml`, `kueue.yaml`, `featurestore-fivegprod.yaml` (add `namespace: agent-school` where missing).
 
 **Expect:** within about a minute a pod `feast-fivegprod-...` is Running 1/1 in the project and two PVCs (`feast-fivegprod-registry`, `feast-fivegprod-online`) are Bound. The RHOAI dashboard Feature store page lists `fivegprod`.
 
@@ -203,16 +203,16 @@ EA note: on newer EA builds the feast CRD silently drops the `runFeastApplyOnIni
 
 ```
 oc create configmap feast-pipeline-src -n agent-school \
-  --from-file=features.py=101-noc-assistant/feature_repo/features.py \
-  --from-file=ingest.py=101-noc-assistant/feature_repo/ingest.py \
-  --from-file=train_anomaly.py=101-noc-assistant/training/train_anomaly.py
+  --from-file=features.py=101-moc-assistant/feature_repo/features.py \
+  --from-file=ingest.py=101-moc-assistant/feature_repo/ingest.py \
+  --from-file=train_anomaly.py=101-moc-assistant/training/train_anomaly.py
 oc create configmap feast-saveds-src -n agent-school \
-  --from-file=save_datasets.py=101-noc-assistant/feature_repo/save_training_datasets.py
+  --from-file=save_datasets.py=101-moc-assistant/feature_repo/save_training_datasets.py
 ```
 
 (No terminal? Import YAML works too: wrap each file's text in a ConfigMap `data:` block.)
 
-**Console:** Import YAML, paste `101-noc-assistant/deploy/ocp/rome/job-feast-bootstrap.yaml`, then `job-feast-save-datasets.yaml`.
+**Console:** Import YAML, paste `101-moc-assistant/deploy/ocp/rome/job-feast-bootstrap.yaml`, then `job-feast-save-datasets.yaml`.
 
 **Expect:** Job `feast-bootstrap` completes in 2 to 4 minutes. Its pod log ends with three `[push] ... -> online store` lines (the pushed vectors carry January 2025 timestamps — that is the dataset's own clock, not staleness). `feast-save-datasets` completes and the dashboard Feature store, Datasets tab shows the three SavedDatasets.
 
@@ -220,7 +220,7 @@ oc create configmap feast-saveds-src -n agent-school \
 
 **Why:** this is the course thesis in one object: **one agent run = one Job**. The agent starts, reads the question from env, calls its tools (which now hit the live online store), reasons with the in-cluster LLM, prints its answer, and exits. No server, no session, no state left behind; the Job record and the MLflow trace ARE the run. When you open the trace in Experiments you are seeing the governance payoff of Steps 2 to 4: identity passed auth, config enabled tracking, and every LLM and tool call is auditable after the fact.
 
-**Do (Console):** Import YAML, paste `101-noc-assistant/deploy/ocp/job-ask.yaml` and add `namespace: agent-school`. (It uses `generateName`, so the console will accept it once; to re-run, paste it again. With a terminal: `oc create -f 101-noc-assistant/deploy/ocp/job-ask.yaml`.)
+**Do (Console):** Import YAML, paste `101-moc-assistant/deploy/ocp/job-ask.yaml` and add `namespace: agent-school`. (It uses `generateName`, so the console will accept it once; to re-run, paste it again. With a terminal: `oc create -f 101-moc-assistant/deploy/ocp/job-ask.yaml`.)
 
 **Expect:** the `noc-ask-...` pod completes in about a minute. Read its log: a structured NOC answer that cites live KPI and alert data. Then open RHOAI dashboard, Experiments: the agent's episode is flushed to the `101-noc-assistant` experiment as an MLflow **trace** (Traces tab), not a run — the runs list stays empty, and that is expected. In the replay portal you see the experiment card; browse the trace itself on a live cluster.
 
@@ -232,10 +232,10 @@ oc create configmap feast-saveds-src -n agent-school \
 
 ```
 oc create configmap ray-sweep-src -n agent-school \
-  --from-file=sweep.py=101-noc-assistant/training/ray_contamination_sweep.py
+  --from-file=sweep.py=101-moc-assistant/training/ray_contamination_sweep.py
 ```
 
-**Console:** Import YAML, paste `101-noc-assistant/deploy/ocp/rome/rayjob-anomaly-sweep.yaml`.
+**Console:** Import YAML, paste `101-moc-assistant/deploy/ocp/rome/rayjob-anomaly-sweep.yaml`.
 
 **Expect:** head and worker pods start (image pull can take a few minutes the first time), the RayJob reaches `SUCCEEDED`, results land in Experiments under `5gprod-anomaly-sweep` (`f1` prints 0.000 on this unlabeled sweep — `rate_gap` is the tuning signal, not f1), and Observe & monitor, Workload metrics shows the admitted workload. Head and worker pods stay around until the 24h TTL; that is by design.
 

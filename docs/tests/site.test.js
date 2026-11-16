@@ -24,7 +24,7 @@ const BASE = process.env.BASE_URL || 'http://localhost:8777';
 
   // F6: manual link uses blob
   const manual = await page.$eval('#detailbody a:has-text("Course Manual")', e => e.href);
-  check('F6 Course Manual blob URL', manual === 'https://github.com/open-experiments/agent-school/blob/main/301-closed-loop-netops/MANUAL.md', manual);
+  check('F6 Course Manual blob URL', manual === 'https://github.com/lakurella-svg/mfg-agent-school/blob/main/301-closed-loop-netops/MANUAL.md', manual);
 
   // walkthrough button duration matches F1
   const walk = await page.$eval('#detailbody a:has-text("Open walkthrough")', e => e.textContent.trim());
@@ -62,7 +62,7 @@ const BASE = process.env.BASE_URL || 'http://localhost:8777';
   const rIds = await page.$$eval('#rgrid .rcard .badge', els => els.map(e => e.textContent.trim()));
   check('R2 three proposed 4xx cards', rIds.join(',') === '401 · proposed,402 · proposed,403 · proposed', rIds.join(','));
   const rLinks = await page.$$eval('#rgrid .rcard a.foot', els => els.map(e => e.href));
-  check('R2 cards link to RoadMap.md sections', rLinks.length === 3 && rLinks.every(h => h.startsWith('https://github.com/open-experiments/agent-school/blob/main/docs/RoadMap.md#40')), rLinks.join(' ~ '));
+  check('R2 cards link to RoadMap.md sections', rLinks.length === 3 && rLinks.every(h => h.startsWith('https://github.com/lakurella-svg/mfg-agent-school/blob/main/docs/RoadMap.md#40')), rLinks.join(' ~ '));
   const steps = await page.$$eval('#steps .step', els => els.length);
   check('R3 five gated steps', steps === 5, `count=${steps}`);
   const v0 = await page.evaluate(() => ({ src: document.getElementById('slideimg').getAttribute('src'), cnt: document.getElementById('slidecnt').textContent }));

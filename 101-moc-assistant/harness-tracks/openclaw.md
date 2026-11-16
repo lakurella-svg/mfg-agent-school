@@ -44,11 +44,11 @@ vLLM on RHOAI (or any OpenAI-compatible endpoint) is a custom provider with
     servers: {
       "noc-telemetry": {
         command: "python3",
-        args: ["<repo-path>/101-noc-assistant/tools/telemetry_mcp.py"],
+        args: ["<repo-path>/101-moc-assistant/tools/telemetry_mcp.py"],
       },
       "noc-runbooks": {
         command: "python3",
-        args: ["<repo-path>/101-noc-assistant/tools/runbook_mcp.py"],
+        args: ["<repo-path>/101-moc-assistant/tools/runbook_mcp.py"],
       },
     },
   },

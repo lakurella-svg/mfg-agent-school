@@ -14,7 +14,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY 201-rca-investigator/backend/ backend/
 COPY 201-rca-investigator/agent/ agent/
 COPY 201-rca-investigator/tools/ tools/
-COPY 101-noc-assistant/data/ data/
+COPY 101-moc-assistant/data/ data/
 
 ENV PYTHONUNBUFFERED=1 \
     DATA_DIR=/opt/app-root/src/data \

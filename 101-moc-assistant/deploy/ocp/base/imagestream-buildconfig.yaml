@@ -16,9 +16,9 @@ spec:
     type: Git
     git:
       # adjust to your fork
-      uri: https://github.com/open-experiments/agent-school.git
+      uri: https://github.com/lakurella-svg/mfg-agent-school.git
       ref: main
-    contextDir: 101-noc-assistant
+    contextDir: 101-moc-assistant
   strategy:
     type: Docker
     dockerStrategy:
@@ -30,4 +30,4 @@ spec:
   triggers:
     - type: ConfigChange
 # No git remote yet? Binary build instead:
-#   oc start-build noc-assistant --from-dir=101-noc-assistant --follow
+#   oc start-build noc-assistant --from-dir=101-moc-assistant --follow

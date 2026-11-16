@@ -31,7 +31,7 @@ oc start-build noc-assistant --follow      # or binary build:
 Or locally with podman, pushing to the internal registry:
 
 ```bash
-cd 101-noc-assistant
+cd 101-moc-assistant
 podman build -f deploy/Containerfile -t noc-assistant:latest .
 podman tag noc-assistant:latest \
   default-route-openshift-image-registry.<cluster-domain>/agent-school/noc-assistant:latest

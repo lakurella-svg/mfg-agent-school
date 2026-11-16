@@ -13,7 +13,7 @@ Each example takes a proven experiment from [Telco-AIX](https://github.com/open-
 Two commands to a working agent, no model endpoint needed:
 
 ```bash
-cd 101-noc-assistant && pip install -r requirements.txt
+cd 101-moc-assistant && pip install -r requirements.txt
 python3 agent/noc_agent.py --offline "What is wrong in the core right now?"
 ```
 
@@ -23,7 +23,7 @@ That replays a scripted agent episode over the real 5G core dataset, printing ev
 
 | Course | Example | Status | Source experiment | Teaching harness (code) | What it teaches |
 |--------|---------|--------|-------------------|-------------------------|-----------------|
-| [101](./101-noc-assistant/) | NOC Assistant | **working, QA-passed** | 5gprod, telco-sme | custom loop (OpenAI-compatible) | Agent loop, MCP tools, vLLM serving, tracing |
+| [101](./101-moc-assistant/) | NOC Assistant | **working, QA-passed** | 5gprod, telco-sme | custom loop (OpenAI-compatible) | Agent loop, MCP tools, vLLM serving, tracing |
 | [201](./201-rca-investigator/) | RCA Investigator | **working, QA-passed** | llm-rca | custom two-phase loop (OpenAI-compatible) | RAG as a skill backend, small-vs-large model routing, evidence-grounding judge |
 | [202](./202-fraud-triage/) | Fraud Triage | **working, live on Rome + Venice** | revenueassurance | LangGraph | Train-serve pipeline, classic ML model as a governed tool, human-approval gate |
 | [301](./301-closed-loop-netops/) | Closed-Loop NetOps | **working, live-proven on Rome + Venice** | autonet, agentic | LangGraph + A2A | Multi-agent closed loop, governed actuation (Kuadrant), quant + qual co-decision on the plan |
@@ -33,7 +33,7 @@ All five courses run live on the two reference clusters, **Rome** (SNO) and **Ve
 
 Courses are graded: 1xx runs in minutes on a laptop against any OpenAI-compatible endpoint; 2xx adds skill backends, routing, and a train-serve pipeline; 3xx closes the loop on a cluster, where agents act under governance and a calibrated model co-decides with a GenAI judge.
 
-Table-1 of the article distinguishes two kinds of harness, and the curriculum covers both. Teaching harnesses (the custom loops, LangGraph, and OGX) are libraries: you write the agent and the loop is visible, which is what every course above ships. A product harness is an always-on system you configure instead of code; 101 additionally ships an [OpenClaw track](./101-noc-assistant/harness-tracks/openclaw.md) that runs the same MCP skills under such a harness, with no agent code written. Every example's skills are MCP servers precisely so both kinds can drive identical tools; that is the harness-agnosticism of the blueprint, made testable.
+Table-1 of the article distinguishes two kinds of harness, and the curriculum covers both. Teaching harnesses (the custom loops, LangGraph, and OGX) are libraries: you write the agent and the loop is visible, which is what every course above ships. A product harness is an always-on system you configure instead of code; 101 additionally ships an [OpenClaw track](./101-moc-assistant/harness-tracks/openclaw.md) that runs the same MCP skills under such a harness, with no agent code written. Every example's skills are MCP servers precisely so both kinds can drive identical tools; that is the harness-agnosticism of the blueprint, made testable.
 
 ## Conventions
 
@@ -58,7 +58,7 @@ Every course folder follows the same shape, so once you have read 101 you can na
 
 ```
 agent-school/
-├── 101-noc-assistant/        # working, QA-passed: agent + MCP tools + real 5gprod data + runbooks
+├── 101-moc-assistant/        # working, QA-passed: agent + MCP tools + real 5gprod data + runbooks
 │   ├── agent/                #   the teaching harness (readable tool-calling loop)
 │   ├── tools/                #   skills: in-process lib + stdio MCP servers
 │   ├── data/  runbooks/      #   real Telco-AIX dataset and matching runbooks
@@ -94,7 +94,7 @@ agent-school/
 
 ## Deploy on OpenShift
 
-All five courses ship `deploy/` folders: UBI9 Containerfiles, ImageStream + BuildConfig for in-cluster builds, and restricted-PSS manifests with the right workload shapes (agents as Jobs/CronJobs, backends and scorers as Deployment/KServe + Service, and Kuadrant gateway policies for the governed courses). One `llm-credentials` Secret serves all courses ([shared/manifests/ocp/secret-llm.example.yaml](./shared/manifests/ocp/secret-llm.example.yaml)). Start at [101-noc-assistant/deploy/](./101-noc-assistant/deploy/).
+All five courses ship `deploy/` folders: UBI9 Containerfiles, ImageStream + BuildConfig for in-cluster builds, and restricted-PSS manifests with the right workload shapes (agents as Jobs/CronJobs, backends and scorers as Deployment/KServe + Service, and Kuadrant gateway policies for the governed courses). One `llm-credentials` Secret serves all courses ([shared/manifests/ocp/secret-llm.example.yaml](./shared/manifests/ocp/secret-llm.example.yaml)). Start at [101-moc-assistant/deploy/](./101-moc-assistant/deploy/).
 
 ## License
 

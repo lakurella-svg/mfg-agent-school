@@ -79,7 +79,7 @@ The five specs:
 
 | Spec | MP4 written (overwrites the file if it exists) |
 |------|------------------------------------------------|
-| `video/specs/101.json` | `101-noc-assistant/images/101-noc-assistant.mp4` |
+| `video/specs/101.json` | `101-moc-assistant/images/101-moc-assistant.mp4` |
 | `video/specs/201.json` | `201-rca-investigator/images/201-rca-investigator.mp4` |
 | `video/specs/202.json` | `202-fraud-triage/images/202-fraud-triage.mp4` |
 | `video/specs/301.json` | `301-closed-loop-netops/images/301-closed-loop-netops.mp4` |
@@ -98,11 +98,11 @@ Each scene holds its picture for 0.6 seconds after its narration ends. Splitting
 Keep it as one scene and add `cuts`. `image` is the screenshot at the start. Each cut swaps the screenshot when the voice reaches `at`, a phrase copied from `say`. The narration is synthesized once, so the picture changes without a gap in the voice. The caption on the right stays the scene caption. The 0.6 second hold happens once, after the whole narration.
 
 ```json
-"image": "101-noc-assistant/images/rhoai/model-traces.png",
+"image": "101-moc-assistant/images/rhoai/model-traces.png",
 "say": "And traced reasoning. Every run lands here as a full trace: the question it was asked, every tool call it made, the tokens it spent, and how long each step took.",
 "cuts": [
-  {"at": "the question it was asked", "image": "101-noc-assistant/images/rhoai/model-traces-highlight-request.png"},
-  {"at": "the tokens it spent", "image": "101-noc-assistant/images/rhoai/model-traces-highlight-tokens.png"}
+  {"at": "the question it was asked", "image": "101-moc-assistant/images/rhoai/model-traces-highlight-request.png"},
+  {"at": "the tokens it spent", "image": "101-moc-assistant/images/rhoai/model-traces-highlight-tokens.png"}
 ]
 ```
 

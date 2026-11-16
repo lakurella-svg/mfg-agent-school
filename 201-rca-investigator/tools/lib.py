@@ -16,7 +16,7 @@ import httpx
 RAG_URL = os.environ.get("RAG_URL", "http://127.0.0.1:8201")
 DATA_DIR = Path(os.environ.get(
     "DATA_DIR",
-    Path(__file__).resolve().parent.parent.parent / "101-noc-assistant" / "data",
+    Path(__file__).resolve().parent.parent.parent / "101-moc-assistant" / "data",
 ))
 
 

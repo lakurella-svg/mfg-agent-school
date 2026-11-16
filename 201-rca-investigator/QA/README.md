@@ -27,7 +27,7 @@ structured RCA where every evidence entry carries its record id
 (`alert-0`..`alert-6`) with KPI deltas — see
 `../reports/rome_rca_report.md`. Prerequisite for tool calling on this
 stack: the tokenizer fix documented in
-`../../101-noc-assistant/QA/README.md` (Rome section).
+`../../101-moc-assistant/QA/README.md` (Rome section).
 
 ## Experiments tracking run (test 5)
 

@@ -25,7 +25,7 @@ from sklearn.metrics.pairwise import linear_kernel
 
 DATA_DIR = Path(os.environ.get(
     "DATA_DIR",
-    Path(__file__).resolve().parent.parent.parent / "101-noc-assistant" / "data",
+    Path(__file__).resolve().parent.parent.parent / "101-moc-assistant" / "data",
 ))
 
 NFS = ("amf", "smf", "upf")

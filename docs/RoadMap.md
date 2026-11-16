@@ -111,7 +111,7 @@ New 4xx course threads open under their real numbers (401, 402, 403), so the old
 
 ## Housekeeping note — SETTLED (August 2026)
 
-The names NemoClaw and OpenShell appear in `101-noc-assistant/harness-tracks/openclaw.md` and in 301's blueprint table. They trace to Table 1's blueprint/sandbox rows, where the article lists them as *(planned)* options — so they are forward-references, not invented stacks. The only correction owed was tense: `openclaw.md` described them as "the 301 track" in the present tense, when they are planned article options. **Fixed August 2026**; both mentions now read as planned. The substantive work they point at is unbuilt and lives in 303 above — and note that OpenShell answers the *sandbox supervisor* half of row 3, which is a separate concern from the NemoClaw *product-harness* packaging track 301 sketches.
+The names NemoClaw and OpenShell appear in `101-moc-assistant/harness-tracks/openclaw.md` and in 301's blueprint table. They trace to Table 1's blueprint/sandbox rows, where the article lists them as *(planned)* options — so they are forward-references, not invented stacks. The only correction owed was tense: `openclaw.md` described them as "the 301 track" in the present tense, when they are planned article options. **Fixed August 2026**; both mentions now read as planned. The substantive work they point at is unbuilt and lives in 303 above — and note that OpenShell answers the *sandbox supervisor* half of row 3, which is a separate concern from the NemoClaw *product-harness* packaging track 301 sketches.
 
 ---
 
