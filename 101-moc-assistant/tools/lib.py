@@ -6,7 +6,7 @@ detection uses Isolation Forest, the same algorithm the source experiment
 uses, so the agent's tools behave like the original NOC pipeline.
 
 These functions are the single source of truth for what the agent can do.
-They are exposed two ways: in-process (agent/noc_agent.py registers them as
+They are exposed two ways: in-process (agent/moc_agent.py registers them as
 tool-call handlers) and as MCP servers (telemetry_mcp.py, runbook_mcp.py).
 """
 

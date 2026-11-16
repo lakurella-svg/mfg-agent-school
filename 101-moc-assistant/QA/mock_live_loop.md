@@ -45,7 +45,7 @@ srv = HTTPServer(("127.0.0.1", 8311), Mock)
 threading.Thread(target=srv.serve_forever, daemon=True).start()
 os.environ.update(LLM_BASE_URL="http://127.0.0.1:8311/v1",
                   LLM_API_KEY="test", LLM_MODEL="mock-model")
-from agent.noc_agent import run_live
+from agent.moc_agent import run_live
 answer = run_live("What is wrong in the core right now?")
 assert "MOCK-FINAL" in answer
 print("mock live-loop test: PASS")

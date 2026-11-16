@@ -24,7 +24,7 @@ snippet at the bottom of this file.
 
 `*_maas_wire.jsonl` files contain every HTTP request and response between
 the agent and the model endpoint, one JSON record per line, captured by
-setting `LLM_WIRE_LOG` (see `agent/noc_agent.py:_make_client`). The
+setting `LLM_WIRE_LOG` (see `agent/moc_agent.py:_make_client`). The
 `Authorization` header is redacted; everything else is verbatim, including
 the tool schemas offered, the model's `tool_calls`, the tool results fed
 back, and token usage.
@@ -102,7 +102,7 @@ export LLM_BASE_URL=https://litellm-litemaas.apps.prod.rhoai.rh-aiservices-bu.co
 export LLM_API_KEY=sk-...           # from your MaaS key (starts with sk-)
 export LLM_MODEL=Qwen3.6-35B-A3B
 export LLM_WIRE_LOG=QA/my_wire.jsonl
-python3 agent/noc_agent.py "What is wrong in the 5G core right now?"
+python3 agent/moc_agent.py "What is wrong in the 5G core right now?"
 ```
 
 Deterministic mock-loop test (no endpoint, validates the loop plumbing):

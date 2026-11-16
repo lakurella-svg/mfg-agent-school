@@ -60,9 +60,9 @@ Fresh network data rides the **same** harvest path — that is the entire argume
 
 ```mermaid
 flowchart LR
-  NET2["5G core telemetry<br/>(same harvest path)"] --> ON["Feast online store<br/>latest vector per NF<br/>feature service: noc_telemetry"]
+  NET2["5G core telemetry<br/>(same harvest path)"] --> ON["Feast online store<br/>latest vector per NF<br/>feature service: moc_telemetry"]
   subgraph POD["Agent pod (Job / noc-sweep CronJob, CPU-only)"]
-    LOOP["custom tool-calling loop<br/>agent/noc_agent.py"]
+    LOOP["custom tool-calling loop<br/>agent/moc_agent.py"]
     T1["get_kpi_summary"] & T2["detect_anomalies<br/>(loads registry model)"] & T3["check_alerts"] --> LOOP
     RB["runbook MCP<br/>tools/runbook_mcp.py"] --> LOOP
   end
@@ -96,7 +96,7 @@ flowchart LR
 |---|---|---|
 | Harvest | OTel exporters → Collector → Prometheus | **stand-in:** published houprod dataset in [`data/`](./data/) |
 | Feature engineering | scheduled pipeline job | `feast-bootstrap` Job → [`feature_repo/ingest.py`](./feature_repo/ingest.py) |
-| Feature store | Feast offline (parquet, PVC) + online (latest vectors) | FeatureStore CR `fivegprod`, feature service `noc_telemetry` |
+| Feature store | Feast offline (parquet, PVC) + online (latest vectors) | FeatureStore CR `fivegprod`, feature service `moc_telemetry` |
 | Training | IsolationForest per NF + Ray sweep | [`training/train_anomaly.py`](./training/train_anomaly.py), [`training/ray_contamination_sweep.py`](./training/ray_contamination_sweep.py) |
 | Tracking / registry | MLflow Experiments → Model Registry | experiments `houprod-anomaly-sweep`, registered model `houprod-anomaly-isolationforest` |
 | Serving (model) | registry model loaded as a tool | `detect_anomalies` in [`tools/lib.py`](./tools/lib.py) |

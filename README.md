@@ -14,7 +14,7 @@ Two commands to a working agent, no model endpoint needed:
 
 ```bash
 cd 101-moc-assistant && pip install -r requirements.txt
-python3 agent/noc_agent.py --offline "What is wrong in the core right now?"
+python3 agent/moc_agent.py --offline "What is wrong in the core right now?"
 ```
 
 That replays a scripted agent episode over the real 5G core dataset, printing every plan step, tool call, and observation. When it makes sense, point the same agent at any OpenAI-compatible endpoint (`cp .env.example .env`, fill in `LLM_BASE_URL`/`LLM_API_KEY`/`LLM_MODEL`; endpoint options in [shared/manifests/vllm-rhoai.md](./shared/manifests/vllm-rhoai.md)) and run it live.

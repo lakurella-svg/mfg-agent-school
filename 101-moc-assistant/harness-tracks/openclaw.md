@@ -3,7 +3,7 @@
 Run the same NOC Assistant on [OpenClaw](https://github.com/openclaw/openclaw),
 the always-on personal agent harness. No agent code is written here; that is
 the lesson. The skills you already have as MCP servers plug into OpenClaw's
-config, and its own loop takes over what `agent/noc_agent.py` demonstrated.
+config, and its own loop takes over what `agent/moc_agent.py` demonstrated.
 
 Config keys below are from the official OpenClaw docs
 ([gateway/config-tools](https://docs.openclaw.ai/gateway/config-tools)).
@@ -42,11 +42,11 @@ vLLM on RHOAI (or any OpenAI-compatible endpoint) is a custom provider with
 {
   mcp: {
     servers: {
-      "noc-telemetry": {
+      "moc-telemetry": {
         command: "python3",
         args: ["<repo-path>/101-moc-assistant/tools/telemetry_mcp.py"],
       },
-      "noc-runbooks": {
+      "moc-runbooks": {
         command: "python3",
         args: ["<repo-path>/101-moc-assistant/tools/runbook_mcp.py"],
       },
@@ -55,8 +55,8 @@ vLLM on RHOAI (or any OpenAI-compatible endpoint) is a custom provider with
 }
 ```
 
-OpenClaw exposes these as plugin-owned tools (`noc-telemetry__get_kpi_summary`,
-`noc-telemetry__detect_anomalies`, `noc-runbooks__search_runbooks`, ...).
+OpenClaw exposes these as plugin-owned tools (`moc-telemetry__get_kpi_summary`,
+`moc-telemetry__detect_anomalies`, `moc-runbooks__search_runbooks`, ...).
 
 ## 3. If you run OpenClaw sandboxed, allow the MCP tools through
 
@@ -107,7 +107,7 @@ change.)
         target: "last",          // or an explicit channel, e.g. "telegram"
         isolatedSession: true,   // fresh session per tick: cheap, and 12-Factor clean
         lightContext: true,      // only HEARTBEAT.md from workspace bootstrap
-        prompt: "Run noc-telemetry__get_active_alerts and noc-telemetry__detect_anomalies. If there is a CRITICAL alert or a new anomaly cluster, send a short NOC alert naming the NF, the deviating KPIs, and the matching runbook. Otherwise reply HEARTBEAT_OK.",
+        prompt: "Run moc-telemetry__get_active_alerts and moc-telemetry__detect_anomalies. If there is a CRITICAL alert or a new anomaly cluster, send a short NOC alert naming the NF, the deviating KPIs, and the matching runbook. Otherwise reply HEARTBEAT_OK.",
       },
     },
   },

@@ -4,7 +4,7 @@ The data pipeline of the course, agentified: what the Telco-AIX notebooks
 did by hand becomes a Feast-backed pipeline the platform can run, audit,
 and serve — and the RHOAI dashboard renders it under **Develop & train →
 Feature store** (feature store `fivegprod`, entity `nf`, feature views
-`amf_kpis`/`smf_kpis`/`upf_kpis`, feature service `noc_telemetry`).
+`amf_kpis`/`smf_kpis`/`upf_kpis`, feature service `moc_telemetry`).
 
 Flow (all real, verified on Rome):
 

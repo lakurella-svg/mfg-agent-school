@@ -1,13 +1,13 @@
-# 101 · NOC Assistant
+# 101 · MOC Assistant
 
 > **QA status:** offline mode, MCP servers, mock loop, and two live runs
 > against the AI platform's Model-as-a-Service (LiteLLM gateway,
 > Qwen3.6-35B-A3B) all pass. Full evidence, including wire-level MaaS
 > request/response captures, lives in [QA/](./QA/).
 
-A single agent that answers NOC questions about a 5G core: it inspects telemetry, detects anomalies, and consults runbooks before answering. The "hello world" of agentic telco AI, except it already does real work.
+A single agent that answers MOC questions about a 5G core: it inspects telemetry, detects anomalies, and consults runbooks before answering. The "hello world" of agentic telco AI, except it already does real work.
 
-**Source experiments:** [houprod](https://github.com/open-experiments/Telco-AIX/tree/main/5gprod) (telemetry + NOC workflow), [telco-sme](https://github.com/open-experiments/Telco-AIX/tree/main/telco-sme) (domain knowledge access).
+**Source experiments:** [houprod](https://github.com/open-experiments/Telco-AIX/tree/main/5gprod) (telemetry + MOC workflow), [telco-sme](https://github.com/open-experiments/Telco-AIX/tree/main/telco-sme) (domain knowledge access).
 
 ## What it teaches
 
@@ -23,11 +23,11 @@ A narrated walkthrough (6:29) — the problem, then the step-by-step agentic
 solution over the live AI platform portal on our reference cluster called Venice.
 Click the poster to play or download:
 
-[![101 · NOC Assistant — narrated walkthrough](./images/walkthrough-poster.png)](./images/101-moc-assistant.mp4)
+[![101 · MOC Assistant — narrated walkthrough](./images/walkthrough-poster.png)](./images/101-moc-assistant.mp4)
 
 ## Architecture
 
-![101 NOC Assistant architecture](./images/architecture.png)
+![101 MOC Assistant architecture](./images/architecture.png)
 
 Read the drawing as three zones, because that is the packaging decision the
 whole blueprint turns on:
@@ -57,7 +57,7 @@ from the Rome cluster, not mockups.
 [fenar/5gcore-prod](https://huggingface.co/datasets/fenar/5gcore-prod),
 engineers 1-hour rolling mean/min/max per KPI, lands the offline parquet,
 and pushes the latest vector per NF online. One feature view per NF, one
-`noc_telemetry` feature service:
+`moc_telemetry` feature service:
 
 ![Feature views on the AI platform](./images/rhoai/feature-views.png)
 
@@ -136,7 +136,7 @@ pattern, dashboard labels) are in
 
 | Blueprint component | Here |
 |---------------------|------|
-| Harness | `agent/noc_agent.py` custom tool-calling loop (any OpenAI-compatible endpoint) |
+| Harness | `agent/moc_agent.py` custom tool-calling loop (any OpenAI-compatible endpoint) |
 | Model | your endpoint via `LLM_BASE_URL` (vLLM / AI platform MaaS) |
 | Skills (thin clients) | `tools/lib.py` functions (Feast online client or CSVs, alert feed, runbooks) |
 | Skill exposure | `tools/telemetry_mcp.py`, `tools/runbook_mcp.py` (MCP servers) |
@@ -154,11 +154,11 @@ language model reasons over both before answering.
 pip install -r requirements.txt
 
 # Offline first: scripted episode over the real dataset, no endpoint needed
-python agent/noc_agent.py --offline "What is wrong in the core right now?"
+python agent/moc_agent.py --offline "What is wrong in the core right now?"
 
 # Live: against any OpenAI-compatible endpoint
 cp .env.example .env                      # set LLM_BASE_URL, LLM_API_KEY, LLM_MODEL
-python agent/noc_agent.py "What is wrong in the core right now?"
+python agent/moc_agent.py "What is wrong in the core right now?"
 ```
 
 To run the tools as standalone MCP servers (for MCP-native harnesses or a gateway in front):

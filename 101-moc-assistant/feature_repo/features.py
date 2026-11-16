@@ -73,7 +73,7 @@ smf_kpis = _view("smf", NF_KPIS["smf"])
 upf_kpis = _view("upf", NF_KPIS["upf"])
 
 # What the NOC agent consumes: everything, one service.
-noc_telemetry = FeatureService(
-    name="noc_telemetry",
+moc_telemetry = FeatureService(
+    name="moc_telemetry",
     features=[amf_kpis, smf_kpis, upf_kpis],
 )

@@ -30,8 +30,8 @@
    "step": 2,
    "tab": "Develop & train · Feature store (Feast) — feature views",
    "image": "101-moc-assistant/images/rhoai/feature-views.png",
-   "caption": "One feature view per network function; one noc_telemetry feature service. The pipeline engineers 1-hour rolling mean/min/max per KPI and pushes the latest vector online.",
-   "say": "First, features. Our ingest job pulls the real five-G core dataset, engineers one-hour rolling mean, minimum and maximum for each KPI, lands the offline history as parquet, and pushes the latest vector per network function into the online store. On this Feature Store tab you can see the result on our reference cluster, Venice: one feature view per network function, gathered under a single noc-telemetry feature service. This is what gives the agent a truthful, low-latency view of the network — the same features used to train the model are the ones served at inference, so there is no training-serving skew by construction."
+   "caption": "One feature view per network function; one moc_telemetry feature service. The pipeline engineers 1-hour rolling mean/min/max per KPI and pushes the latest vector online.",
+   "say": "First, features. Our ingest job pulls the real five-G core dataset, engineers one-hour rolling mean, minimum and maximum for each KPI, lands the offline history as parquet, and pushes the latest vector per network function into the online store. On this Feature Store tab you can see the result on our reference cluster, Venice: one feature view per network function, gathered under a single moc-telemetry feature service. This is what gives the agent a truthful, low-latency view of the network — the same features used to train the model are the ones served at inference, so there is no training-serving skew by construction."
   },
   {
    "type": "tab",

@@ -196,7 +196,7 @@ def run_offline(question: str) -> str:
 def _enable_mlflow() -> None:
     """Optional: mirror agent traces to MLflow (RHOAI 3.x Experiments tab).
 
-    Same shim as course 101 (see noc_agent.py:_enable_mlflow): RHOAI's
+    Same shim as course 101 (see moc_agent.py:_enable_mlflow): RHOAI's
     managed MLflow is workspace-scoped, so with MLFLOW_WORKSPACE set every
     request carries the X-MLFLOW-WORKSPACE header plus a Bearer token from
     MLFLOW_TRACKING_TOKEN or the pod ServiceAccount. Never breaks the loop.

@@ -18,8 +18,8 @@ Each course is independent — install and run from inside its directory.
 ```bash
 # 101 / 201: offline deterministic episodes (no model endpoint needed)
 cd 101-moc-assistant && pip install -r requirements.txt
-python3 agent/noc_agent.py --offline "What is wrong in the core right now?"
-python3 agent/noc_agent.py "..."                     # live: needs LLM_BASE_URL/LLM_API_KEY/LLM_MODEL
+python3 agent/moc_agent.py --offline "What is wrong in the core right now?"
+python3 agent/moc_agent.py "..."                     # live: needs LLM_BASE_URL/LLM_API_KEY/LLM_MODEL
 
 cd 201-rca-investigator && python3 agent/rca_agent.py --offline
 uvicorn backend.rag_service:app --port 8201          # 201's RAG skill backend (pattern 2)

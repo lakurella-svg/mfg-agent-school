@@ -13,7 +13,7 @@ from fastmcp import FastMCP  # noqa: E402
 
 from tools import lib  # noqa: E402
 
-mcp = FastMCP("noc-telemetry")
+mcp = FastMCP("moc-telemetry")
 
 
 @mcp.tool()

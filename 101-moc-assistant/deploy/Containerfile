@@ -19,4 +19,4 @@ ENV PYTHONUNBUFFERED=1
 
 # Default: answer one question (override QUESTION via env or args)
 ENV QUESTION="What is wrong in the 5G core right now?"
-CMD ["sh", "-c", "python agent/noc_agent.py \"$QUESTION\""]
+CMD ["sh", "-c", "python agent/moc_agent.py \"$QUESTION\""]
