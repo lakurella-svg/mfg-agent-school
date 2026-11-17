@@ -6,8 +6,8 @@ resources:
   - serviceaccount.yaml
   - cronjob-moc-sweep.yaml
 # Kubernetes has no ImageStream: point the image at your registry here.
-# Default `moc-assistant:latest` works on a single-node cluster that shares
-# the local image store (Docker Desktop, or kind after `kind load`).
+# Default `moc-assistant:latest` works on a local cluster once the image is
+# in its node store (see README.md section 2).
 images:
   - name: moc-assistant
     newName: moc-assistant

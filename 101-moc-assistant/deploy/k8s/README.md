@@ -29,12 +29,24 @@ plain Kubernetes. Never commit a filled-in copy.)
 
 ## 2. Build the image
 
-**Single-node cluster sharing your local image store** (Docker Desktop's
-Kubernetes; for kind, add `kind load docker-image moc-assistant:latest`):
+**Local cluster, no registry** (Docker Desktop, kind):
 
 ```bash
 cd 101-moc-assistant
 docker build -f deploy/Containerfile -t moc-assistant:latest .
+```
+
+Docker Desktop's **kubeadm** cluster sees that image directly. Its **kind**
+cluster (node `desktop-control-plane`) and standalone kind keep a separate
+image store, so load it into the node. Standalone kind:
+`kind load docker-image moc-assistant:latest`. Docker Desktop kind (from
+Git Bash, `export MSYS_NO_PATHCONV=1` first), through a temporary node pod:
+
+```bash
+kubectl debug node/desktop-control-plane -n default --profile=sysadmin --image=busybox:1.36 -- sleep 1800
+P=$(kubectl get pods -n default -o name | grep node-debugger | head -1)
+docker save moc-assistant:latest | kubectl exec -i -n default $P -- chroot /host ctr -n k8s.io images import -
+kubectl delete -n default $P
 ```
 
 **Any cluster with a registry**: build and push locally, or in-cluster with
