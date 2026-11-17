@@ -208,7 +208,7 @@ const IDS = ['101','201','202','301','302'];
     const body = await page.evaluate(() => document.body.innerText);
     check('X5 404 page content correct (live 404-routing verified in Chrome earlier)', body.includes('off-curriculum'), `status=${resp.status()}`);
     const home = await page.evaluate(() => { const a = document.querySelector('a.btn'); return a && a.getAttribute('href'); });
-    check('X5 404 back-link points to site root', home === '/agent-school/');
+    check('X5 404 back-link points to site root', home === '/mfg-agent-school/');
     await page.close();
   }
 

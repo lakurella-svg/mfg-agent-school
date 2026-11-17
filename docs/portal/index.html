@@ -138,7 +138,7 @@ td .sub{color:var(--muted);font-size:11.5px;margin-top:2px}
 </div>
 
 <div id="drawer">
-  <div class="bar"><b>Web terminal</b> · oc · project agent-school · repo <span class="path">open-experiments/agent-school</span>
+  <div class="bar"><b>Web terminal</b> · oc · project agent-school · repo <span class="path">lakurella-svg/mfg-agent-school</span>
     <button id="runbtn" onclick="runStep()">Run step commands</button>
     <span id="tsrc"></span>
     <a onclick="toggleDrawer()" style="margin-left:14px;color:var(--muted)">✕ close</a></div>
@@ -294,7 +294,7 @@ const vis=k=>revealed.has(k);
 function render(){
   const A=TAPE.assets,el=$('content');let h='';
   if(page==='home'){h='<h1>'+TAPE.title+' · Interactive Lab</h1><div class="lede">A replay of the real <b>'+TAPE.cluster+'</b> cluster, captured '+dt()+'. Follow the guide card: run each step\'s <code>oc</code> commands in the web terminal, then find the result in this portal, exactly as on a live AI platform cluster. Every value below was recorded from the live system.'+(TAPE.rebrand?' <b>Rebranded:</b> '+TAPE.rebrand:'')+'</div>'
-    +'<div class="card"><h3>Course '+TAPE.course+' · step '+(cur+1)+' of '+TAPE.steps.length+'</h3><p style="font-size:13px;color:var(--muted)"><a href="../index.html">← Agent School</a> · <a href="https://github.com/open-experiments/agent-school/blob/main/'+dirFor(TAPE.course)+'/MANUAL.md" target="_blank">Course Manual ↗</a> · <a href="https://github.com/open-experiments/agent-school" target="_blank">repo ↗</a></p></div>'
+    +'<div class="card"><h3>Course '+TAPE.course+' · step '+(cur+1)+' of '+TAPE.steps.length+'</h3><p style="font-size:13px;color:var(--muted)"><a href="../index.html">← Agent School</a> · <a href="https://github.com/lakurella-svg/mfg-agent-school/blob/main/'+dirFor(TAPE.course)+'/MANUAL.md" target="_blank">Course Manual ↗</a> · <a href="https://github.com/lakurella-svg/mfg-agent-school" target="_blank">repo ↗</a></p></div>'
     +'<div class="mobilenote">This interactive lab replays a desktop dashboard — best experienced on a desktop screen.</div>';}
   if(page==='projects'){h='<h1>Data science projects</h1>'+crumb(page)+note(page)
     +'<div class="lede">Projects allow you and your team to organize and collaborate on resources within separate namespaces.</div>';
