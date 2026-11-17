@@ -1,4 +1,4 @@
-"""Skill logic for the NOC Assistant.
+"""Skill logic for the MOC Assistant.
 
 Works on the real Telco-AIX houprod dataset (https://huggingface.co/datasets/lakurella/mfgcore-prod):
 per-minute AMF/SMF/UPF KPI series plus a structured alert feed. Anomaly

@@ -12,6 +12,7 @@ elsewhere (any OpenAI-compatible endpoint).
 | internal registry image reference    | `images:` in `base/kustomization.yaml`              |
 | random UID injected by the platform  | `runAsUser: 1001` (the UBI image's non-root user)   |
 | `rome/` overlay (Feast, MLflow, Kueue) | not ported: OpenShift AI services                 |
+| `noc-assistant` / `noc-sweep` names (match the recorded cluster) | `moc-assistant` / `moc-sweep` |
 
 ## 1. Namespace, identity, credentials
 
@@ -29,11 +30,11 @@ plain Kubernetes. Never commit a filled-in copy.)
 ## 2. Build the image
 
 **Single-node cluster sharing your local image store** (Docker Desktop's
-Kubernetes; for kind, add `kind load docker-image noc-assistant:latest`):
+Kubernetes; for kind, add `kind load docker-image moc-assistant:latest`):
 
 ```bash
 cd 101-moc-assistant
-docker build -f deploy/Containerfile -t noc-assistant:latest .
+docker build -f deploy/Containerfile -t moc-assistant:latest .
 ```
 
 **Any cluster with a registry**: build and push locally, or in-cluster with
@@ -42,7 +43,7 @@ lists the two secrets it needs). Then point the manifests at the pushed image:
 
 ```bash
 cd 101-moc-assistant/deploy/k8s/base
-kustomize edit set image noc-assistant=<registry>/agent-school/noc-assistant:latest
+kustomize edit set image moc-assistant=<registry>/agent-school/moc-assistant:latest
 ```
 
 and edit `image:` in `job-ask.yaml` the same way.
@@ -57,7 +58,7 @@ kubectl -n agent-school logs -f job/$(kubectl -n agent-school get jobs -o name -
 Continuous sweep (applied suspended so it costs nothing until enabled):
 
 ```bash
-kubectl -n agent-school patch cronjob noc-sweep -p '{"spec":{"suspend":false}}'
+kubectl -n agent-school patch cronjob moc-sweep -p '{"spec":{"suspend":false}}'
 ```
 
 ## Notes

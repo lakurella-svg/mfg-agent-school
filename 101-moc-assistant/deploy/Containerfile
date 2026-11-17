@@ -1,4 +1,4 @@
-# 101 NOC Assistant — agent + MCP servers + real dataset in one image.
+# 101 MOC Assistant — agent + MCP servers + real dataset in one image.
 # Build from the COURSE directory:
 #   podman build -f deploy/Containerfile -t agent-school/101-moc-assistant .
 FROM registry.access.redhat.com/ubi9/python-312:latest
@@ -18,5 +18,5 @@ COPY runbooks/ runbooks/
 ENV PYTHONUNBUFFERED=1
 
 # Default: answer one question (override QUESTION via env or args)
-ENV QUESTION="What is wrong in the 5G core right now?"
+ENV QUESTION="What is wrong in the mfg core right now?"
 CMD ["sh", "-c", "python agent/moc_agent.py \"$QUESTION\""]

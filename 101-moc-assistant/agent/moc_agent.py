@@ -1,4 +1,4 @@
-"""NOC Assistant: a single-agent tool-calling loop.
+"""MOC Assistant: a single-agent tool-calling loop.
 
 Runs against any OpenAI-compatible endpoint (vLLM on RHOAI, MaaS, Llama
 Stack's compatible API). The harness is deliberately small so the loop is
@@ -22,7 +22,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from tools.lib import TOOL_HANDLERS, TOOL_SCHEMAS  # noqa: E402
 
 SYSTEM_PROMPT = (
-    "You are a NOC assistant for a 5G core (AMF, SMF, UPF). "
+    "You are a MOC assistant for a mfg core (AMF, SMF, UPF). "
     "Use tools to inspect telemetry and runbooks before answering. "
     "Ground every claim in tool output; never invent KPI values. "
     "Finish with: findings, probable cause, and recommended next action."
@@ -227,7 +227,7 @@ def _enable_mlflow() -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="NOC Assistant agent")
+    parser = argparse.ArgumentParser(description="MOC Assistant agent")
     parser.add_argument("question", nargs="?", default="Why is UPF throughput degraded?")
     parser.add_argument("--offline", action="store_true", help="run scripted episode without an LLM endpoint")
     args = parser.parse_args()
@@ -235,7 +235,7 @@ def main() -> None:
     _enable_mlflow()
 
     answer = run_offline(args.question) if args.offline else run_live(args.question)
-    print("\n=== NOC Assistant ===")
+    print("\n=== MOC Assistant ===")
     print(answer)
 
 

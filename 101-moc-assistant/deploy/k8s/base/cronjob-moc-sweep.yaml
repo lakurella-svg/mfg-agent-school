@@ -1,14 +1,14 @@
 # Continuous MOC sweep without a product harness: a CronJob runs the agent
 # on a cadence. Ships suspended so applying it does not burn tokens;
-# enable with: kubectl -n agent-school patch cronjob noc-sweep -p '{"spec":{"suspend":false}}'
+# enable with: kubectl -n agent-school patch cronjob moc-sweep -p '{"spec":{"suspend":false}}'
 # Same workload as ../../ocp/base/cronjob-noc-sweep.yaml; only the image
 # reference differs (set it in kustomization.yaml `images:`).
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: noc-sweep
+  name: moc-sweep
   labels:
-    app.kubernetes.io/name: noc-assistant
+    app.kubernetes.io/name: moc-assistant
     app.kubernetes.io/part-of: agent-school
 spec:
   schedule: "*/15 * * * *"
@@ -23,10 +23,10 @@ spec:
       template:
         metadata:
           labels:
-            app.kubernetes.io/name: noc-assistant
+            app.kubernetes.io/name: moc-assistant
         spec:
           restartPolicy: Never
-          serviceAccountName: noc-assistant
+          serviceAccountName: moc-assistant
           # OpenShift injects a random UID; plain Kubernetes uses the image's
           # user, so pin the UBI default non-root UID explicitly.
           securityContext:
@@ -36,7 +36,7 @@ spec:
               type: RuntimeDefault
           containers:
             - name: agent
-              image: noc-assistant:latest
+              image: moc-assistant:latest
               imagePullPolicy: IfNotPresent
               env:
                 - name: QUESTION

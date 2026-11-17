@@ -4,13 +4,13 @@ namespace: agent-school
 resources:
   - namespace.yaml
   - serviceaccount.yaml
-  - cronjob-noc-sweep.yaml
+  - cronjob-moc-sweep.yaml
 # Kubernetes has no ImageStream: point the image at your registry here.
-# Default `noc-assistant:latest` works on a single-node cluster that shares
+# Default `moc-assistant:latest` works on a single-node cluster that shares
 # the local image store (Docker Desktop, or kind after `kind load`).
 images:
-  - name: noc-assistant
-    newName: noc-assistant
+  - name: moc-assistant
+    newName: moc-assistant
     newTag: latest
 # ../job-ask.yaml and ../build-job.yaml use generateName; create them with
 # `kubectl create -f`, not apply.
