@@ -1,7 +1,8 @@
 """MOC Assistant: a single-agent tool-calling loop.
 
 Runs against any OpenAI-compatible endpoint (vLLM on the AI platform, MaaS, Llama
-Stack's compatible API). The harness is deliberately small so the loop is
+Stack's compatible API), or against Claude through the Anthropic SDK when
+LLM_PROVIDER=anthropic. The harness is deliberately small so the loop is
 readable: plan -> tool call -> observe -> repeat -> answer.
 
 Offline mode (--offline) replays a scripted episode with no endpoint, so the
@@ -134,6 +135,66 @@ def run_live(question: str) -> str:
     return "Stopped: reached max tool turns without a final answer."
 
 
+def run_live_anthropic(question: str) -> str:
+    """The same loop against Claude, through the Anthropic SDK.
+
+    Selected by LLM_PROVIDER=anthropic. Same tools, same turn cap, same
+    traces; only the wire format differs:
+    - tools are declared as {name, description, input_schema} (converted from
+      the OpenAI-style TOOL_SCHEMAS the vLLM path uses);
+    - the system prompt is a top-level field, not a message;
+    - Claude returns tool_use blocks, and every tool_result goes back in ONE
+      user message;
+    - the assistant turn is appended as-is (response.content), so its
+      thinking blocks travel back unchanged, as the API requires.
+    Credentials: ANTHROPIC_API_KEY (or LLM_API_KEY). Model: LLM_MODEL,
+    default claude-opus-5-5. Effort: LLM_EFFORT, default medium.
+    """
+    import anthropic  # imported lazily so offline mode needs no SDK
+
+    api_key = os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("LLM_API_KEY")
+    client = anthropic.Anthropic(api_key=api_key) if api_key else anthropic.Anthropic()
+    model = os.environ.get("LLM_MODEL", "claude-opus-5-5")
+    effort = os.environ.get("LLM_EFFORT", "medium")
+    tools = [
+        {"name": t["function"]["name"],
+         "description": t["function"]["description"],
+         "input_schema": t["function"]["parameters"]}
+        for t in TOOL_SCHEMAS
+    ]
+
+    messages = [{"role": "user", "content": question}]
+    for turn in range(MAX_TURNS):
+        # Server-side fallback: if Claude declines on a safety policy, the API
+        # re-runs the turn on a fallback model inside the same call.
+        response = client.beta.messages.create(
+            model=model,
+            max_tokens=16000,
+            system=SYSTEM_PROMPT,
+            tools=tools,
+            messages=messages,
+            output_config={"effort": effort},
+            betas=["server-side-fallback-2026-07-01"],
+            fallbacks="default",
+        )
+        if response.stop_reason == "refusal":
+            trace("refusal", str(getattr(response.stop_details, "category", None)))
+            return "The model declined to answer this request."
+        messages.append({"role": "assistant", "content": response.content})
+        if response.stop_reason == "pause_turn":
+            continue
+        tool_uses = [b for b in response.content if b.type == "tool_use"]
+        if not tool_uses:
+            trace("answer", f"turn {turn + 1} ({response.model})")
+            return "\n".join(b.text for b in response.content if b.type == "text")
+        results = []
+        for block in tool_uses:
+            results.append({"type": "tool_result", "tool_use_id": block.id,
+                            "content": run_tool(block.name, block.input)})
+        messages.append({"role": "user", "content": results})
+    return "Stopped: reached max tool turns without a final answer."
+
+
 def run_offline(question: str) -> str:
     """Scripted episode: same loop shape, deterministic plan, no model.
 
@@ -219,7 +280,10 @@ def _enable_mlflow() -> None:
 
         mlflow.set_tracking_uri(uri)
         mlflow.set_experiment(os.environ.get("MLFLOW_EXPERIMENT", "101-moc-assistant"))
-        mlflow.openai.autolog()
+        if os.environ.get("LLM_PROVIDER") == "anthropic":
+            mlflow.anthropic.autolog()
+        else:
+            mlflow.openai.autolog()
         suffix = f" (workspace {workspace})" if workspace else ""
         trace("mlflow", f"autolog enabled -> {uri}{suffix}")
     except Exception as exc:  # tracing must never break the loop
@@ -234,7 +298,12 @@ def main() -> None:
 
     _enable_mlflow()
 
-    answer = run_offline(args.question) if args.offline else run_live(args.question)
+    if args.offline:
+        answer = run_offline(args.question)
+    elif os.environ.get("LLM_PROVIDER") == "anthropic":
+        answer = run_live_anthropic(args.question)
+    else:
+        answer = run_live(args.question)
     print("\n=== MOC Assistant ===")
     print(answer)
 

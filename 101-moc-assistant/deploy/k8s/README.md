@@ -26,6 +26,21 @@ kubectl -n agent-school create secret generic llm-credentials \
 (Template: `../../../shared/manifests/ocp/secret-llm.example.yaml`; it is
 plain Kubernetes. Never commit a filled-in copy.)
 
+**Running on Claude instead.** The same Secret selects the Anthropic path:
+the agent then calls Claude through the Anthropic SDK (no `LLM_BASE_URL`).
+It needs an API key from the Claude Console (console.anthropic.com); a
+claude.ai chat subscription does not include API access.
+
+```bash
+kubectl -n agent-school create secret generic llm-credentials \
+  --from-literal=LLM_PROVIDER=anthropic \
+  --from-literal=LLM_MODEL=claude-opus-5-5 \
+  --from-literal=ANTHROPIC_API_KEY=sk-ant-...
+```
+
+Optional `LLM_EFFORT` (`low` / `medium` / `high`; default `medium`). The pod
+needs outbound HTTPS to `api.anthropic.com`.
+
 ## 2. Build the image
 
 **Local cluster, no registry** (Docker Desktop, kind):

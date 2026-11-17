@@ -136,8 +136,8 @@ pattern, dashboard labels) are in
 
 | Blueprint component | Here |
 |---------------------|------|
-| Harness | `agent/moc_agent.py` custom tool-calling loop (any OpenAI-compatible endpoint) |
-| Model | your endpoint via `LLM_BASE_URL` (vLLM / AI platform MaaS) |
+| Harness | `agent/moc_agent.py` custom tool-calling loop (any OpenAI-compatible endpoint, or Claude via the Anthropic SDK) |
+| Model | your endpoint via `LLM_BASE_URL` (vLLM / AI platform MaaS), or Claude with `LLM_PROVIDER=anthropic` + `ANTHROPIC_API_KEY` |
 | Skills (thin clients) | `tools/lib.py` functions (Feast online client or CSVs, alert feed, runbooks) |
 | Skill exposure | `tools/telemetry_mcp.py`, `tools/runbook_mcp.py` (MCP servers) |
 | Feature store | Feast `mfgprod` (`feature_repo/`) — offline training set + online serving |
