@@ -1,0 +1,51 @@
+# One agent run = one Job: the agent asks, answers, and exits.
+# kubectl -n agent-school create -f job-ask.yaml
+# (`create` skips kustomize, so edit `image:` below if you push to a registry.)
+apiVersion: batch/v1
+kind: Job
+metadata:
+  generateName: noc-ask-
+  namespace: agent-school
+  labels:
+    app.kubernetes.io/name: noc-assistant
+    app.kubernetes.io/part-of: agent-school
+spec:
+  backoffLimit: 1
+  ttlSecondsAfterFinished: 3600
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: noc-assistant
+    spec:
+      restartPolicy: Never
+      serviceAccountName: noc-assistant
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1001
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: agent
+          image: noc-assistant:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: QUESTION
+              value: "What is wrong in the mfg core right now, and what should the MOC do about it?"
+          envFrom:
+            - secretRef:
+                name: llm-credentials
+            # Experiments tracking and Feast online-store config: opt-in per
+            # environment, absent by default (same pattern as the ocp Job).
+            - configMapRef:
+                name: mlflow-tracking
+                optional: true
+            - configMapRef:
+                name: feature-store-client
+                optional: true
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests: { cpu: 100m, memory: 256Mi }
+            limits: { cpu: "1", memory: 512Mi }

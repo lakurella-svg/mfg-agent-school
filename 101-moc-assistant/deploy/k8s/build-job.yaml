@@ -1,0 +1,62 @@
+# In-cluster image build: the plain-Kubernetes counterpart of the OpenShift
+# BuildConfig (../ocp/base/imagestream-buildconfig.yaml). Kubernetes has no
+# build API, so a Kaniko Job clones the repo, builds deploy/Containerfile
+# from the course directory, and pushes to your registry.
+#
+# Prereqs (once, in namespace agent-school):
+#   # read access to the private repo (same secret the BuildConfig uses)
+#   kubectl -n agent-school create secret generic github-source --type=kubernetes.io/basic-auth --from-literal=username=<github-user> --from-literal=password=<token>
+#   # push access to your registry
+#   kubectl -n agent-school create secret docker-registry registry-push --docker-server=<registry> --docker-username=<user> --docker-password=<token>
+#
+# Then set DESTINATION below and run:
+#   kubectl create -f build-job.yaml
+#
+# No registry (single-node Docker Desktop / kind)? Build locally instead;
+# see README.md.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  generateName: noc-assistant-build-
+  namespace: agent-school
+  labels:
+    app.kubernetes.io/name: noc-assistant-build
+    app.kubernetes.io/part-of: agent-school
+spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 3600
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: noc-assistant-build
+    spec:
+      restartPolicy: Never
+      volumes:
+        - name: docker-config
+          secret:
+            secretName: registry-push
+            items:
+              - key: .dockerconfigjson
+                path: config.json
+      containers:
+        - name: kaniko
+          image: gcr.io/kaniko-project/executor:v1.23.2
+          args:
+            # adjust to your fork
+            - --context=git://github.com/lakurella-svg/mfg-agent-school.git#refs/heads/main
+            - --context-sub-path=101-moc-assistant
+            - --dockerfile=deploy/Containerfile
+            - --destination=$(DESTINATION)
+          env:
+            - name: DESTINATION
+              value: <registry>/agent-school/noc-assistant:latest
+            - name: GIT_USERNAME
+              valueFrom: {secretKeyRef: {name: github-source, key: username}}
+            - name: GIT_PASSWORD
+              valueFrom: {secretKeyRef: {name: github-source, key: password}}
+          volumeMounts:
+            - name: docker-config
+              mountPath: /kaniko/.docker
+          resources:
+            requests: { cpu: 500m, memory: 1Gi }
+            limits: { cpu: "2", memory: 3Gi }

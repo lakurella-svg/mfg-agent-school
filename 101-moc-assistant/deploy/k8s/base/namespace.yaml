@@ -1,0 +1,15 @@
+# Plain-Kubernetes stand-in for `oc new-project agent-school`.
+# Pod Security: agent pods meet `restricted`; the in-cluster image build
+# (../build-job.yaml, Kaniko) runs as root, which `restricted` forbids, so
+# the namespace enforces `baseline` and only warns/audits on `restricted`.
+# Building images outside the cluster (docker build + push)? Then you can
+# raise `enforce` to restricted.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: agent-school
+  labels:
+    app.kubernetes.io/part-of: agent-school
+    pod-security.kubernetes.io/enforce: baseline
+    pod-security.kubernetes.io/warn: restricted
+    pod-security.kubernetes.io/audit: restricted

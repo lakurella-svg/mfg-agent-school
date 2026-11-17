@@ -5,6 +5,9 @@ backend runs as a Deployment + Service (pattern 2: the index lives in the
 backend, never in the agent pod), and each RCA is a one-shot Job that calls
 it over the Service DNS name.
 
+Not on OpenShift? The same workloads for plain Kubernetes are in
+[`k8s/`](k8s/README.md).
+
 ## 1. Project and credentials
 
 Same namespace and `llm-credentials` secret as 101 (the 201 agent also reads

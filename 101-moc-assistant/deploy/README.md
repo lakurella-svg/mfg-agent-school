@@ -5,6 +5,9 @@ CronJob variant gives you the continuous NOC sweep without a product
 harness. CPU-only, restricted-PSS compliant, model served elsewhere
 (RHOAI MaaS or vLLM) per the blueprint.
 
+Not on OpenShift? The same workloads for plain Kubernetes are in
+[`k8s/`](k8s/README.md).
+
 ## 1. Project and credentials
 
 ```bash
