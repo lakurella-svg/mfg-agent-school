@@ -40,7 +40,7 @@ def fetch(url, tries=6):
     import time
     for i in range(tries):
         try:
-            # the dataset is private: send HF_TOKEN when it is set
+            # the dataset is public; send HF_TOKEN when set (e.g. a private fork)
             token = os.environ.get("HF_TOKEN")
             req = urllib.request.Request(
                 url, headers={"Authorization": f"Bearer {token}"} if token else {})

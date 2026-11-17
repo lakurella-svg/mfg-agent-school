@@ -34,7 +34,7 @@ HF = "https://huggingface.co/datasets/lakurella/mfgcore-prod/resolve/main"
 WINDOW = 60  # samples ~= 1 hour at 1-minute resolution
 NFS = ("amf", "smf", "upf")
 NF_FILES = {"amf": "station_metrics.csv", "smf": "job_metrics.csv", "upf": "line_metrics.csv"}
-# the dataset is private: send HF_TOKEN when it is set
+# the dataset is public; send HF_TOKEN when set (e.g. a private fork)
 HF_OPTS = ({"Authorization": f"Bearer {os.environ['HF_TOKEN']}"}
            if os.environ.get("HF_TOKEN") else None)
 

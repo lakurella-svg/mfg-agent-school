@@ -40,7 +40,7 @@ WINDOW = 60  # samples ~= 1 hour at 1-minute resolution
 def load_raw(nf: str) -> pd.DataFrame:
     if os.environ.get("DATASET_SOURCE", "local") == "hf":
         url = f"{HF_BASE}/{NF_FILES[nf]}"
-        # the dataset is private: send HF_TOKEN when it is set
+        # the dataset is public; send HF_TOKEN when set (e.g. a private fork)
         token = os.environ.get("HF_TOKEN")
         opts = {"Authorization": f"Bearer {token}"} if token else None
         df = pd.read_csv(url, storage_options=opts)

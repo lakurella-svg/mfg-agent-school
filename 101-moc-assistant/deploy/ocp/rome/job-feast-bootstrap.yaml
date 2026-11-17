@@ -43,7 +43,7 @@ spec:
           env:
             - {name: HOME, value: /tmp}
             - {name: PIP_NO_CACHE_DIR, value: "1"}
-            - {name: DATASET_SOURCE, value: hf}   # pull lakurella/mfgcore-prod (private: also set HF_TOKEN)
+            - {name: DATASET_SOURCE, value: hf}   # pull lakurella/mfgcore-prod (public; HF_TOKEN only for a private fork)
           command:
             - /bin/sh
             - -c

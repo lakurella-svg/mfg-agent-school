@@ -18,6 +18,12 @@ spec:
       # adjust to your fork; context is the repo root (image needs 101 data)
       uri: https://github.com/lakurella-svg/mfg-agent-school.git
       ref: main
+    # The repo is private: the build clones with this secret. Create it once
+    # with a GitHub token that has read access to the repo:
+    #   oc create secret generic github-source -n agent-school     #     --type=kubernetes.io/basic-auth     #     --from-literal=username=<github-user> --from-literal=password=<token>
+    #   oc annotate secret github-source -n agent-school     #     'build.openshift.io/source-secret-match-uri-1=https://github.com/*'
+    sourceSecret:
+      name: github-source
   strategy:
     type: Docker
     dockerStrategy:
