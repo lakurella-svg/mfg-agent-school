@@ -1,4 +1,4 @@
-# Kueue wiring for the agent-school project (RHBOK on RHOAI 3.5 EA2).
+# Kueue wiring for the agent-school project (RHBOK on the AI platform 3.5 EA2).
 #
 # Cluster-level prerequisites (created at install time on Rome; see
 # shared/manifests/rome/install-report.md):

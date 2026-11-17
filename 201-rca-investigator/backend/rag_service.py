@@ -28,20 +28,20 @@ DATA_DIR = Path(os.environ.get(
     Path(__file__).resolve().parent.parent.parent / "101-moc-assistant" / "data",
 ))
 
-NFS = ("amf", "smf", "upf")
-NF_FILES = {"amf": "station_metrics.csv", "smf": "job_metrics.csv", "upf": "line_metrics.csv"}
+UNITS = ("station", "job", "line")
+UNIT_FILES = {"station": "station_metrics.csv", "job": "job_metrics.csv", "line": "line_metrics.csv"}
 
 
 def build_corpus() -> tuple[list[dict], list[str]]:
     docs: list[dict] = []
-    for nf in NFS:
-        df = pd.read_csv(DATA_DIR / NF_FILES[nf])
+    for unit in UNITS:
+        df = pd.read_csv(DATA_DIR / UNIT_FILES[unit])
         cols = [c for c in df.columns if c != "timestamp"]
         for i, row in df.iterrows():
             text = f"{row['timestamp']} - " + " | ".join(
                 f"{c}: {row[c]}" for c in cols
             )
-            docs.append({"id": f"{nf}-{i}", "nf": nf, "text": text})
+            docs.append({"id": f"{unit}-{i}", "unit": unit, "text": text})
     alerts = json.loads((DATA_DIR / "alerts.json").read_text())
     for i, a in enumerate(alerts.get("alerts", [])):
         text = (
@@ -50,7 +50,7 @@ def build_corpus() -> tuple[list[dict], list[str]]:
             f"..{a.get('end_time')} :: {a.get('description')} :: "
             f"delta_percent={json.dumps(a.get('metrics_snapshot', {}).get('delta_percent', {}))}"
         )
-        docs.append({"id": f"alert-{i}", "nf": a.get("component", "").lower(), "text": text})
+        docs.append({"id": f"alert-{i}", "unit": a.get("component", "").lower(), "text": text})
     return docs, [d["text"] for d in docs]
 
 
@@ -65,15 +65,15 @@ class Retriever:
         self.vectorizer = TfidfVectorizer(max_features=50000, preprocessor=_normalize)
         self.matrix = self.vectorizer.fit_transform(texts)
 
-    def search(self, query: str, nf: str = "all", k: int = 5) -> list[dict]:
+    def search(self, query: str, unit: str = "all", k: int = 5) -> list[dict]:
         scores = linear_kernel(self.vectorizer.transform([query]), self.matrix)[0]
         order = scores.argsort()[::-1]
         out = []
         for idx in order:
             doc = self.docs[int(idx)]
-            if nf != "all" and doc["nf"] != nf:
+            if unit != "all" and doc["unit"] != unit:
                 continue
-            out.append({"id": doc["id"], "nf": doc["nf"],
+            out.append({"id": doc["id"], "unit": doc["unit"],
                         "score": round(float(scores[int(idx)]), 4),
                         "text": doc["text"][:600]})
             if len(out) >= k:
@@ -91,5 +91,5 @@ def healthz() -> dict:
 
 
 @app.get("/search")
-def search(q: str = Query(...), nf: str = "all", k: int = 5) -> dict:
-    return {"query": q, "nf": nf, "results": retriever.search(q, nf=nf, k=k)}
+def search(q: str = Query(...), unit: str = "all", k: int = 5) -> dict:
+    return {"query": q, "unit": unit, "results": retriever.search(q, unit=unit, k=k)}

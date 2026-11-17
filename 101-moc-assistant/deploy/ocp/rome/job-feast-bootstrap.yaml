@@ -1,4 +1,4 @@
-# One-shot: bootstrap the fivegprod feature store content — engineer the
+# One-shot: bootstrap the mfgprod feature store content — engineer the
 # offline parquet, apply the feature definitions, push the online vectors.
 # This is the Job form of the flow feature_repo/README.md describes; it
 # targets the store files directly on the PVCs (EA2: remote apply does not
@@ -15,7 +15,7 @@
 #
 # Follow-ups, same template, different command:
 # - train:  python train_anomaly.py    (add the mlflow-tracking envFrom;
-#           needs the noc-assistant-mlflow RBAC; MODEL_OUT on emptyDir)
+#           needs the moc-assistant-mlflow RBAC; MODEL_OUT on emptyDir)
 # - score:  python ingest.py --score <bundle>   (traced inference; pushes
 #           anomaly_score/flag online — the verdicts 301's Diagnostic reads)
 apiVersion: batch/v1
@@ -34,9 +34,9 @@ spec:
         - name: src
           configMap: {name: feast-pipeline-src}
         - name: reg
-          persistentVolumeClaim: {claimName: feast-fivegprod-registry}
+          persistentVolumeClaim: {claimName: feast-mfgprod-registry}
         - name: onl
-          persistentVolumeClaim: {claimName: feast-fivegprod-online}
+          persistentVolumeClaim: {claimName: feast-mfgprod-online}
       containers:
         - name: feast
           image: registry.access.redhat.com/ubi9/python-311:latest
@@ -54,7 +54,7 @@ spec:
               REG=$(find /feast-registry -name 'registry*.db' | head -1)
               ONL=$(find /feast-online -name '*.db' | head -1)
               cat > /tmp/repo/feature_store.yaml <<EOF
-              project: fivegprod
+              project: mfgprod
               provider: local
               registry:
                 path: ${REG}

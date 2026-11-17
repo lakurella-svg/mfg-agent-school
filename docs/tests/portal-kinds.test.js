@@ -26,7 +26,7 @@ const BASE = process.env.BASE_URL || 'http://localhost:8777';
     await runCur(page);
     const txt = await projectsText(page);
     check('F13 101 no null/ entries', !txt.includes('null/'));
-    for (const want of ['ConfigMap/mlflow-tracking', 'ConfigMap/feature-store-client', 'ServiceAccount/noc-assistant', 'CronJob/noc-sweep', 'PersistentVolumeClaim/', 'FeatureStore/fivegprod'])
+    for (const want of ['ConfigMap/mlflow-tracking', 'ConfigMap/feature-store-client', 'ServiceAccount/moc-assistant', 'CronJob/moc-sweep', 'PersistentVolumeClaim/', 'FeatureStore/mfgprod'])
       check(`F13 101 shows ${want}`, txt.includes(want));
     await page.close();
   }

@@ -51,12 +51,12 @@ const BASE = process.env.BASE_URL || 'http://localhost:8777';
     await runCur(page);                    // run step 6 (ask the agent)
     await page.evaluate(() => go('experiments'));
     let html = await page.evaluate(() => document.getElementById('content').innerHTML);
-    check('F5 sweep hidden at step 6', !html.includes('5gprod-anomaly-sweep') && html.includes('101-noc-assistant'), '');
+    check('F5 sweep hidden at step 6', !html.includes('houprod-anomaly-sweep') && html.includes('101-moc-assistant'), '');
     await page.evaluate(() => document.getElementById('gnext').click()); // -> step 7
     await runCur(page);                    // run the sweep
     await page.evaluate(() => go('experiments'));
     html = await page.evaluate(() => document.getElementById('content').innerHTML);
-    check('F5 sweep visible after step 7 run', html.includes('5gprod-anomaly-sweep') && html.includes('ray-contamination-sweep'));
+    check('F5 sweep visible after step 7 run', html.includes('houprod-anomaly-sweep') && html.includes('ray-contamination-sweep'));
     // 101 kimi row still there (tape untouched apart from reveal)
     await page.evaluate(() => { go('models'); setTab('deployments'); });
     const dep = await page.evaluate(() => document.getElementById('content').innerHTML);

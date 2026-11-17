@@ -99,6 +99,10 @@ FEAST_URL = os.environ["FEAST_ONLINE_URL"].rstrip("/")
 FEAST_CA = os.environ.get(
     "FEAST_CA", "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt")
 NFS = ["amf", "smf", "upf"]
+# 101's feature store names its production units station / job / line
+# (entity `unit`); this loop keeps its own amf / smf / upf vocabulary, so
+# translate at the lookup.
+UNIT = {"amf": "station", "smf": "job", "upf": "line"}
 
 
 def sense_post():
@@ -108,9 +112,9 @@ def sense_post():
     out = {}
     for nf in NFS:
         body = json.dumps({
-            "features": [nf + "_kpis:anomaly_score",
-                         nf + "_kpis:anomaly_flag"],
-            "entities": {"nf": [nf]}}).encode()
+            "features": [UNIT[nf] + "_kpis:anomaly_score",
+                         UNIT[nf] + "_kpis:anomaly_flag"],
+            "entities": {"unit": [UNIT[nf]]}}).encode()
         req = urllib.request.Request(
             FEAST_URL + "/get-online-features", data=body,
             headers={"Content-Type": "application/json"})

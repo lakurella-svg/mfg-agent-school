@@ -1,8 +1,8 @@
-# Feast feature store `fivegprod` (feast.dev operator CR) — exported from
+# Feast feature store `mfgprod` (feast.dev operator CR) — exported from
 # the live Rome cluster. Backs the 101 data pipeline: offline parquet for
 # point-in-time training, online store for the agent's live network state.
 #
-# RHOAI 3.5 EA2 findings baked in (details: ../../../feature_repo/README.md):
+# AI platform 3.5 EA2 findings baked in (details: ../../../feature_repo/README.md):
 # - label `feature-store-ui: enabled` + `registry.local.server.restAPI: true`
 #   are BOTH required before the dashboard lists the store (it reads the
 #   *-registry-rest service).
@@ -16,14 +16,14 @@
 apiVersion: feast.dev/v1alpha1
 kind: FeatureStore
 metadata:
-  name: fivegprod
+  name: mfgprod
   namespace: agent-school
   labels:
     app.kubernetes.io/part-of: agent-school
     feature-store-ui: enabled
     opendatahub.io/dashboard: "true"
 spec:
-  feastProject: fivegprod
+  feastProject: mfgprod
   runFeastApplyOnInit: false   # true only for the very first boot
   ui: {}
   services:

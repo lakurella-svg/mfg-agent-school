@@ -37,9 +37,9 @@ def get_incident(component: str = "all") -> str:
     return json.dumps({"total": len(alerts), "alerts": alerts})
 
 
-def retrieve_evidence(query: str, nf: str = "all", k: int = 5) -> str:
+def retrieve_evidence(query: str, unit: str = "all", k: int = 5) -> str:
     """Query the RAG service backend for telemetry/alert records."""
-    r = httpx.get(f"{RAG_URL}/search", params={"q": query, "nf": nf, "k": k}, timeout=20)
+    r = httpx.get(f"{RAG_URL}/search", params={"q": query, "unit": unit, "k": k}, timeout=20)
     r.raise_for_status()
     return json.dumps(r.json())
 
@@ -49,10 +49,10 @@ TOOL_SCHEMAS = [
         "type": "function",
         "function": {
             "name": "get_incident",
-            "description": "Fetch the structured alert feed for a component (AMF|SMF|UPF|all).",
+            "description": "Fetch the structured alert feed for a component (STATION|JOB|LINE|all).",
             "parameters": {
                 "type": "object",
-                "properties": {"component": {"type": "string", "enum": ["AMF", "SMF", "UPF", "all"]}},
+                "properties": {"component": {"type": "string", "enum": ["STATION", "JOB", "LINE", "all"]}},
             },
         },
     },
@@ -65,7 +65,7 @@ TOOL_SCHEMAS = [
                 "type": "object",
                 "properties": {
                     "query": {"type": "string"},
-                    "nf": {"type": "string", "enum": ["amf", "smf", "upf", "all"]},
+                    "unit": {"type": "string", "enum": ["station", "job", "line", "all"]},
                     "k": {"type": "integer", "default": 5},
                 },
                 "required": ["query"],

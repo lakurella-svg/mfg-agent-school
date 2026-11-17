@@ -1,10 +1,10 @@
-# 101 · Feature repo (Feast on RHOAI)
+# 101 · Feature repo (Feast on the AI platform)
 
 The data pipeline of the course, agentified: what the Telco-AIX notebooks
 did by hand becomes a Feast-backed pipeline the platform can run, audit,
-and serve — and the RHOAI dashboard renders it under **Develop & train →
-Feature store** (feature store `fivegprod`, entity `nf`, feature views
-`amf_kpis`/`smf_kpis`/`upf_kpis`, feature service `moc_telemetry`).
+and serve — and the AI platform dashboard renders it under **Develop & train →
+Feature store** (feature store `mfgprod`, entity `unit`, feature views
+`station_kpis`/`job_kpis`/`line_kpis`, feature service `moc_telemetry`).
 
 Flow (all real, verified on Rome):
 
@@ -12,9 +12,9 @@ Flow (all real, verified on Rome):
    ([hf.co/datasets/lakurella/mfgcore-prod](https://huggingface.co/datasets/lakurella/mfgcore-prod)
    with `DATASET_SOURCE=hf`, the bundled CSVs otherwise), engineers 1-hour
    rolling mean/min/max per KPI, writes the offline parquet, and pushes the
-   latest vector per NF to the online store.
+   latest vector per unit to the online store.
 2. `../training/train_anomaly.py` retrieves the same features point-in-time
-   from the offline store, trains an IsolationForest per NF, validates
+   from the offline store, trains an IsolationForest per unit, validates
    against the labeled alert windows, and logs params/metrics/model to
    MLflow → **Experiments → houprod-anomaly** (Model training view).
 2b. `save_training_datasets.py` persists the same point-in-time
@@ -28,7 +28,7 @@ Flow (all real, verified on Rome):
    `detect_anomalies` serves the pipeline's model verdicts. Without the
    env, the CSV path is unchanged — laptop learners need no cluster.
 
-## Rome ops notes (RHOAI 3.5 EA2 findings)
+## Rome ops notes (AI platform 3.5 EA2 findings)
 
 - The FeatureStore CR (`deploy/ocp/rome`-adjacent; created cluster-side)
   needs label `feature-store-ui: enabled` **and**
@@ -36,8 +36,8 @@ Flow (all real, verified on Rome):
   lists it — the dashboard reads the registry through the
   `*-registry-rest` service.
 - The EA registry server does not persist writes from remote `feast apply`;
-  run apply/push as a Job that mounts the `feast-fivegprod-registry` and
-  `feast-fivegprod-online` PVCs and targets the store files directly
+  run apply/push as a Job that mounts the `feast-mfgprod-registry` and
+  `feast-mfgprod-online` PVCs and targets the store files directly
   (`registry: /feast-registry/registry.db`, sqlite online store). This is
   the same access mode the operator's own CronJob uses.
 - Set `spec.services.runFeastApplyOnInit: false` after first boot —
@@ -56,7 +56,7 @@ Flow (all real, verified on Rome):
 - The Entities tab shows a `__dummy` entity: that is Feast's own reserved
   placeholder (`DUMMY_ENTITY_NAME`, hardcoded in the library), auto-created
   in every project as the join target for entity-less feature views. Our
-  views all join on the real `nf` entity, so it is inert here. Upstream
-  Feast's UI filters it out of listings; the RHOAI 3.5 EA2 dashboard does
+  views all join on the real `unit` entity, so it is inert here. Upstream
+  Feast's UI filters it out of listings; the AI platform 3.5 EA2 dashboard does
   not yet (cosmetic dashboard gap, worth reporting). Do not delete or
   rename it - `feast apply` recreates it.

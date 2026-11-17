@@ -17,15 +17,15 @@ mcp = FastMCP("moc-telemetry")
 
 
 @mcp.tool()
-def get_kpi_summary(nf: str = "all", window_minutes: int = 60) -> str:
-    """Summarize 5G core KPIs for a network function (amf|smf|upf|all)."""
-    return lib.get_kpi_summary(nf=nf, window_minutes=window_minutes)
+def get_kpi_summary(unit: str = "all", window_minutes: int = 60) -> str:
+    """Summarize mfg core KPIs for a production unit (station|job|line|all)."""
+    return lib.get_kpi_summary(unit=unit, window_minutes=window_minutes)
 
 
 @mcp.tool()
-def detect_anomalies(nf: str = "all", contamination: float = 0.02) -> str:
-    """Isolation Forest anomaly detection on AMF/SMF/UPF KPI series."""
-    return lib.detect_anomalies(nf=nf, contamination=contamination)
+def detect_anomalies(unit: str = "all", contamination: float = 0.02) -> str:
+    """Isolation Forest anomaly detection on station/job/line KPI series."""
+    return lib.detect_anomalies(unit=unit, contamination=contamination)
 
 
 @mcp.tool()

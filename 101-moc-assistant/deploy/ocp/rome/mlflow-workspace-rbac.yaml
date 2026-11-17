@@ -1,14 +1,14 @@
 # MLflow workspace access for EVERY ServiceAccount in agent-school.
 #
 # Why a group binding instead of per-SA bindings (EA2 finding, learned
-# live on Rome): RHOAI's KubeRay integration quietly overrides the
+# live on Rome): the AI platform's KubeRay integration quietly overrides the
 # ServiceAccount you set on a RayJob's head/worker pod templates — it
 # generates and swaps in `<rayjob>-oauth-proxy-sa` at admission time.
 # The sweep pods therefore ran as
 # `system:serviceaccount:agent-school:anomaly-contamination-sweep-*-oauth-proxy-sa`
 # and MLflow's workspace SubjectAccessReview (which checks `edit`-level
 # access in the workspace namespace) denied them, even though the
-# `noc-assistant` SA named in the manifest had access.
+# `moc-assistant` SA named in the manifest had access.
 #
 # Since the generated SA name changes with every RayJob, the robust fix
 # is to grant the namespace's ServiceAccount *group* edit on the

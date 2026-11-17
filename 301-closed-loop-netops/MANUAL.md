@@ -87,7 +87,7 @@ With clean telemetry the correct plan is "no remediation needed," and the co-dec
 1. Courses 101 and 202 environments in place: project `agent-school` with `llm-credentials`, `mlflow-tracking`, `feature-store-client`, the SA-group MLflow binding, `dspa-minio-creds`, and the `fraud-serving` SA + `aws-connection-minio-models` data connection (202 Step 6; the 301 serving reuses both).
 2. Kimi-Linear Ready in `telco-aix`; managed MLflow with server-side job execution on; MinIO with the `models` bucket.
 3. The Gateway class `data-science-gateway-class` exists (RHOAI aigateway component). The platform's shared gateway only accepts routes from its own namespaces, so this course creates its own Gateway; on bare-metal SNO it will show `AddressNotAssigned`, which is fine because all calls are east-west through the ClusterIP.
-4. Feast `fivegprod` loaded (101): Diagnostic reads anomaly verdicts from the online store.
+4. Feast `mfgprod` loaded (101): Diagnostic reads anomaly verdicts from the online store.
 
 ## Step 1: Namespaces and secrets
 

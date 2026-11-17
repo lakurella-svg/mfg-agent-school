@@ -14,14 +14,14 @@ mcp = FastMCP("rca-retrieval")
 
 @mcp.tool()
 def get_incident(component: str = "all") -> str:
-    """Fetch the structured alert feed for a component (AMF|SMF|UPF|all)."""
+    """Fetch the structured alert feed for a component (STATION|JOB|LINE|all)."""
     return lib.get_incident(component=component)
 
 
 @mcp.tool()
-def retrieve_evidence(query: str, nf: str = "all", k: int = 5) -> str:
+def retrieve_evidence(query: str, unit: str = "all", k: int = 5) -> str:
     """Retrieve telemetry and alert records from the RAG backend."""
-    return lib.retrieve_evidence(query=query, nf=nf, k=k)
+    return lib.retrieve_evidence(query=query, unit=unit, k=k)
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 # Continuous MOC sweep without a product harness: a CronJob runs the agent
 # on a cadence. Ships suspended so applying it does not burn tokens;
 # enable with: kubectl -n agent-school patch cronjob moc-sweep -p '{"spec":{"suspend":false}}'
-# Same workload as ../../ocp/base/cronjob-noc-sweep.yaml; only the image
+# Same workload as ../../ocp/base/cronjob-moc-sweep.yaml; only the image
 # reference differs (set it in kustomization.yaml `images:`).
 apiVersion: batch/v1
 kind: CronJob

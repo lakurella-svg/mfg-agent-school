@@ -2,21 +2,21 @@
   "generation_time": "2025-01-16T12:01:56.100077",
   "total_alerts": 7,
   "alerts_by_type": {
-    "REGISTRATION_STORM": 2,
+    "CHECKIN_STORM": 2,
     "RESOURCE_EXHAUSTION": 2,
-    "SESSION_MANAGEMENT_FAILURE": 3
+    "JOB_MANAGEMENT_FAILURE": 3
   },
   "alerts_by_component": {
-    "AMF": 2,
-    "SMF": 3,
-    "UPF": 2
+    "STATION": 2,
+    "JOB": 3,
+    "LINE": 2
   },
   "alerts": [
     {
-      "type": "REGISTRATION_STORM",
+      "type": "CHECKIN_STORM",
       "severity": "CRITICAL",
-      "component": "AMF",
-      "description": "AMF affected by amf_registration_storm",
+      "component": "STATION",
+      "description": "STATION affected by station_checkin_storm",
       "start_time": "2025-01-16 16:37:55.775630",
       "end_time": "2025-01-16 16:42:55.775630",
       "metrics_snapshot": {
@@ -24,48 +24,48 @@
           "mfg_link_connectivity": 1.2332146303688922,
           "capacity_utilization_pct": 39.05341504818977,
           "buffer_occupancy_pct": 52.263694826859684,
-          "registration_rate": 130.01424726529876,
+          "station_checkin_rate": 130.01424726529876,
           "job_setup_success_rate": 107.46664622676818,
           "station_auth_success_rate": 130.5761325141248,
           "mes_message_rate": 257.7765410728756,
           "station_checkin_success_rate": 129.06574373500098,
           "line_assignment_success_rate": 130.42106712129458,
-          "nas_security_success_rate": 130.03816018567505,
+          "device_security_success_rate": 130.03816018567505,
           "control_handshake_success_rate": 127.55743965250636
         },
         "during": {
           "mfg_link_connectivity": 1.2332146303688922,
           "capacity_utilization_pct": 35.93700089361211,
           "buffer_occupancy_pct": 52.263694826859684,
-          "registration_rate": 130.01424726529876,
+          "station_checkin_rate": 130.01424726529876,
           "job_setup_success_rate": 107.46664622676818,
           "station_auth_success_rate": 115.26242169444738,
           "mes_message_rate": 257.7765410728756,
           "station_checkin_success_rate": 129.06574373500098,
           "line_assignment_success_rate": 130.42106712129458,
-          "nas_security_success_rate": 130.03816018567505,
+          "device_security_success_rate": 130.03816018567505,
           "control_handshake_success_rate": 127.55743965250636
         },
         "delta_percent": {
           "mfg_link_connectivity": 0.0,
           "capacity_utilization_pct": -7.9798761535506575,
           "buffer_occupancy_pct": 0.0,
-          "registration_rate": 0.0,
+          "station_checkin_rate": 0.0,
           "job_setup_success_rate": 0.0,
           "station_auth_success_rate": -11.727802412911014,
           "mes_message_rate": 0.0,
           "station_checkin_success_rate": 0.0,
           "line_assignment_success_rate": 0.0,
-          "nas_security_success_rate": 0.0,
+          "device_security_success_rate": 0.0,
           "control_handshake_success_rate": 0.0
         }
       }
     },
     {
-      "type": "REGISTRATION_STORM",
+      "type": "CHECKIN_STORM",
       "severity": "CRITICAL",
-      "component": "SMF",
-      "description": "SMF affected by amf_registration_storm",
+      "component": "JOB",
+      "description": "JOB affected by station_checkin_storm",
       "start_time": "2025-01-17 07:12:55.775630",
       "end_time": "2025-01-17 07:17:55.775630",
       "metrics_snapshot": {
@@ -104,8 +104,8 @@
     {
       "type": "RESOURCE_EXHAUSTION",
       "severity": "MAJOR",
-      "component": "UPF",
-      "description": "UPF affected by upf_resource_exhaustion",
+      "component": "LINE",
+      "description": "LINE affected by line_resource_exhaustion",
       "start_time": "2025-01-17 02:42:55.775630",
       "end_time": "2025-01-17 02:47:55.775630",
       "metrics_snapshot": {
@@ -147,8 +147,8 @@
     {
       "type": "RESOURCE_EXHAUSTION",
       "severity": "MAJOR",
-      "component": "SMF",
-      "description": "SMF affected by upf_resource_exhaustion",
+      "component": "JOB",
+      "description": "JOB affected by line_resource_exhaustion",
       "start_time": "2025-01-16 12:22:55.775630",
       "end_time": "2025-01-16 12:27:55.775630",
       "metrics_snapshot": {
@@ -185,10 +185,10 @@
       }
     },
     {
-      "type": "SESSION_MANAGEMENT_FAILURE",
+      "type": "JOB_MANAGEMENT_FAILURE",
       "severity": "MAJOR",
-      "component": "SMF",
-      "description": "SMF affected by smf_session_management_failure",
+      "component": "JOB",
+      "description": "JOB affected by job_management_failure",
       "start_time": "2025-01-16 22:29:55.775630",
       "end_time": "2025-01-16 22:34:55.775630",
       "metrics_snapshot": {
@@ -225,10 +225,10 @@
       }
     },
     {
-      "type": "SESSION_MANAGEMENT_FAILURE",
+      "type": "JOB_MANAGEMENT_FAILURE",
       "severity": "MAJOR",
-      "component": "AMF",
-      "description": "AMF affected by smf_session_management_failure",
+      "component": "STATION",
+      "description": "STATION affected by job_management_failure",
       "start_time": "2025-01-17 00:47:55.775630",
       "end_time": "2025-01-17 00:52:55.775630",
       "metrics_snapshot": {
@@ -236,48 +236,48 @@
           "mfg_link_connectivity": 0.9488922323550508,
           "capacity_utilization_pct": 30.244951134249163,
           "buffer_occupancy_pct": 38.44282711287148,
-          "registration_rate": 101.99022424270855,
+          "station_checkin_rate": 101.99022424270855,
           "job_setup_success_rate": 78.88253751720364,
           "station_auth_success_rate": 101.16330567071932,
           "mes_message_rate": 205.60145907140313,
           "station_checkin_success_rate": 97.61207629730649,
           "line_assignment_success_rate": 96.4061439686553,
-          "nas_security_success_rate": 95.65215242364778,
+          "device_security_success_rate": 95.65215242364778,
           "control_handshake_success_rate": 103.33683235562572
         },
         "during": {
           "mfg_link_connectivity": 0.9488922323550508,
           "capacity_utilization_pct": 30.244951134249163,
           "buffer_occupancy_pct": 38.44282711287148,
-          "registration_rate": 101.99022424270855,
+          "station_checkin_rate": 101.99022424270855,
           "job_setup_success_rate": 64.52092192960228,
           "station_auth_success_rate": 101.16330567071932,
           "mes_message_rate": 205.60145907140313,
           "station_checkin_success_rate": 97.61207629730649,
           "line_assignment_success_rate": 96.4061439686553,
-          "nas_security_success_rate": 95.65215242364778,
+          "device_security_success_rate": 95.65215242364778,
           "control_handshake_success_rate": 103.33683235562572
         },
         "delta_percent": {
           "mfg_link_connectivity": 0.0,
           "capacity_utilization_pct": 0.0,
           "buffer_occupancy_pct": 0.0,
-          "registration_rate": 0.0,
+          "station_checkin_rate": 0.0,
           "job_setup_success_rate": -18.2063306273194,
           "station_auth_success_rate": 0.0,
           "mes_message_rate": 0.0,
           "station_checkin_success_rate": 0.0,
           "line_assignment_success_rate": 0.0,
-          "nas_security_success_rate": 0.0,
+          "device_security_success_rate": 0.0,
           "control_handshake_success_rate": 0.0
         }
       }
     },
     {
-      "type": "SESSION_MANAGEMENT_FAILURE",
+      "type": "JOB_MANAGEMENT_FAILURE",
       "severity": "MAJOR",
-      "component": "UPF",
-      "description": "UPF affected by smf_session_management_failure",
+      "component": "LINE",
+      "description": "LINE affected by job_management_failure",
       "start_time": "2025-01-17 06:37:55.775630",
       "end_time": "2025-01-17 06:42:55.775630",
       "metrics_snapshot": {

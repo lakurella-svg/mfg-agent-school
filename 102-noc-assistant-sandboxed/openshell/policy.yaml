@@ -1,4 +1,4 @@
-# 102 · sandbox policy for the NOC Assistant running under NVIDIA OpenShell.
+# 102 · sandbox policy for the MOC Assistant running under NVIDIA OpenShell.
 #
 # Schema follows examples/sandbox-policy-quickstart/policy.yaml from
 # github.com/NVIDIA/OpenShell (Apache-2.0). Four layers, two lifetimes:
@@ -6,7 +6,7 @@
 # are hot-reloadable, which is why lab 3 can tighten egress on a running
 # agent and watch the next tool call fail.
 #
-# The point of this file: the NOC agent's blast radius is declared here, in
+# The point of this file: the MOC agent's blast radius is declared here, in
 # YAML, outside the agent — not asserted in a system prompt. Every "denied"
 # line in QA/ traces back to a specific stanza below.
 
@@ -29,7 +29,7 @@ filesystem_policy:
     - /etc
     - /var/log
     - /sandbox/course/data        # houprod KPI CSVs (the offline dataset)
-    - /sandbox/course/runbooks    # NOC runbooks the agent cites
+    - /sandbox/course/runbooks    # MOC runbooks the agent cites
     - /sandbox/course/tools       # skill code: readable, never writable
   read_write:
     - /sandbox                    # scratch: reports, traces
@@ -44,7 +44,7 @@ landlock:
   compatibility: best_effort
 
 # --- Layer 2: network (hot-reloadable) -------------------------------------
-# Default deny. The agent is a NOC assistant, not a web client: it needs the
+# Default deny. The agent is a MOC assistant, not a web client: it needs the
 # model endpoint and the in-cluster feature store, and nothing else. Note the
 # model endpoint is NOT listed with a credential — see the inference layer.
 network_policies:
@@ -60,7 +60,7 @@ network_policies:
   feature_store:
     name: feast-online-store
     endpoints:
-      - host: feast-fivegprod.agent-school.svc.cluster.local
+      - host: feast-mfgprod.agent-school.svc.cluster.local
         port: 443
         protocol: rest
         enforcement: enforce

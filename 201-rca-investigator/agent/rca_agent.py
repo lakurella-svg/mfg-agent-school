@@ -31,7 +31,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 REPORT_DIR = Path(os.environ.get("REPORT_DIR", BASE_DIR / "reports"))
 
 INVESTIGATOR_PROMPT = (
-    "You are an RCA investigator for a 5G core. Gather evidence: first call "
+    "You are an RCA investigator for a mfg core. Gather evidence: first call "
     "get_incident, then call retrieve_evidence with 2-4 focused queries "
     "(KPI names, alert types, time windows). When you have enough evidence, "
     "reply with a short bullet list of the key evidence found. Do not write "
@@ -39,9 +39,9 @@ INVESTIGATOR_PROMPT = (
 )
 
 WRITER_PROMPT = (
-    "You are writing a root-cause analysis for a 5G core incident. Use ONLY "
+    "You are writing a root-cause analysis for a mfg core incident. Use ONLY "
     "the evidence records provided. Every factual claim must cite record ids "
-    "in brackets, like [amf-281] or [alert-0]. Structure: Incident, Evidence, "
+    "in brackets, like [station-281] or [alert-0]. Structure: Incident, Evidence, "
     "Root cause, Contributing factors, Recommended remediation. If evidence "
     "is insufficient for a claim, say so rather than inventing it."
 )
@@ -170,10 +170,10 @@ def run_offline(question: str) -> str:
     comp = lead["component"].lower()
     q1 = json.loads(run_tool("retrieve_evidence",
                              {"query": lead["type"].replace("_", " ").lower(),
-                              "nf": comp, "k": 3}))
+                              "unit": comp, "k": 3}))
     q2 = json.loads(run_tool("retrieve_evidence",
                              {"query": f"{comp} {lead['start_time'][:16]}",
-                              "nf": comp, "k": 3}))
+                              "unit": comp, "k": 3}))
     trace("phase-2", "write report (offline template)")
     cites = [r["id"] for r in q1["results"] + q2["results"]][:6]
     deltas = ", ".join(f"{k} {v:+.1f}%" for k, v in lead["kpi_delta_percent"].items())
@@ -253,7 +253,7 @@ def _enable_mlflow() -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description="RCA Investigator agent")
     parser.add_argument("question", nargs="?",
-                        default="Produce an RCA for the most severe current incident in the 5G core.")
+                        default="Produce an RCA for the most severe current incident in the mfg core.")
     parser.add_argument("--offline", action="store_true")
     args = parser.parse_args()
     _enable_mlflow()

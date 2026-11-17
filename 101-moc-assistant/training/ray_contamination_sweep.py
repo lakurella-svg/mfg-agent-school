@@ -10,7 +10,7 @@ real tracking — admitted through Kueue (LocalQueue `agent-school-queue`).
 Runs as deploy/ocp/rome/rayjob-anomaly-sweep.yaml: the RayJob carries the
 `kueue.x-k8s.io/queue-name` label, so RHBOK admits it against the shared
 ClusterQueue before KubeRay spins up the head+worker pods. Pods run as
-the `noc-assistant` ServiceAccount so MLflow's workspace
+the `moc-assistant` ServiceAccount so MLflow's workspace
 SubjectAccessReview passes (same RBAC as the agent itself).
 
 Objective note: on this dataset the IsolationForest decision boundary
@@ -28,8 +28,8 @@ import ray
 
 HF = "https://huggingface.co/datasets/lakurella/mfgcore-prod/resolve/main"
 GRID = [0.02, 0.05, 0.10]
-NFS = ["amf", "smf", "upf"]
-NF_FILES = {"amf": "station_metrics.csv", "smf": "job_metrics.csv", "upf": "line_metrics.csv"}
+UNITS = ["station", "job", "line"]
+UNIT_FILES = {"station": "station_metrics.csv", "job": "job_metrics.csv", "line": "line_metrics.csv"}
 WINDOW, SPLIT = 60, 0.7
 
 
@@ -51,7 +51,7 @@ def fetch(url, tries=6):
 
 
 @ray.remote(num_cpus=1)
-def evaluate(nf, contamination, csv_bytes, alerts):
+def evaluate(unit, contamination, csv_bytes, alerts):
     import io
 
     import pandas as pd
@@ -71,7 +71,7 @@ def evaluate(nf, contamination, csv_bytes, alerts):
 
     labels = pd.Series(0, index=df.index)
     for a in alerts:
-        if str(a.get("component", "")).lower() != nf:
+        if str(a.get("component", "")).lower() != unit:
             continue
         m = (df["event_timestamp"] >= pd.Timestamp(a["start_time"])) & \
             (df["event_timestamp"] <= pd.Timestamp(a["end_time"]))
@@ -84,7 +84,7 @@ def evaluate(nf, contamination, csv_bytes, alerts):
     pred = (clf.decision_function(out.iloc[n:]) < 0).astype(int)
     true = labels.iloc[n:]
     rate_pred, rate_true = float(pred.mean()), float(true.mean())
-    return {"nf": nf, "contamination": contamination,
+    return {"unit": unit, "contamination": contamination,
             "f1": float(f1_score(true, pred, zero_division=0)),
             "precision": float(precision_score(true, pred, zero_division=0)),
             "recall": float(recall_score(true, pred, zero_division=0)),
@@ -124,27 +124,27 @@ ray.init()
 print("cluster:", ray.cluster_resources(), flush=True)
 alerts_raw = json.loads(fetch(f"{HF}/alerts.json"))
 alerts = alerts_raw.get("alerts", alerts_raw if isinstance(alerts_raw, list) else [])
-data = {nf: ray.put(fetch(f"{HF}/{NF_FILES[nf]}")) for nf in NFS}
+data = {unit: ray.put(fetch(f"{HF}/{UNIT_FILES[unit]}")) for unit in UNITS}
 print("datasets staged in object store", flush=True)
-results = ray.get([evaluate.remote(nf, c, data[nf], alerts)
-                   for nf in NFS for c in GRID])
+results = ray.get([evaluate.remote(unit, c, data[unit], alerts)
+                   for unit in UNITS for c in GRID])
 
 mlflow = mlflow_client()
 with mlflow.start_run(run_name="ray-contamination-sweep") as run:
-    mlflow.log_params({"grid": str(GRID), "nfs": str(NFS),
+    mlflow.log_params({"grid": str(GRID), "units": str(UNITS),
                        "objective": "min |pred_rate - labeled_rate|",
                        "compute": "RayJob on Kueue (agent-school-queue)"})
     best = {}
     for r in results:
-        tag = f"{r['nf']}_c{str(r['contamination']).replace('.', '_')}"
+        tag = f"{r['unit']}_c{str(r['contamination']).replace('.', '_')}"
         for k in ("f1", "precision", "recall", "pred_rate", "rate_gap"):
             mlflow.log_metric(f"{tag}_{k}", r[k])
-        cur = best.get(r["nf"])
+        cur = best.get(r["unit"])
         if cur is None or r["rate_gap"] < cur["rate_gap"]:
-            best[r["nf"]] = r
-    for nf, r in best.items():
-        mlflow.log_param(f"best_contamination_{nf}", r["contamination"])
-        mlflow.log_metric(f"best_rate_gap_{nf}", r["rate_gap"])
-        print(f"[best] {nf}: contamination={r['contamination']} "
+            best[r["unit"]] = r
+    for unit, r in best.items():
+        mlflow.log_param(f"best_contamination_{unit}", r["contamination"])
+        mlflow.log_metric(f"best_rate_gap_{unit}", r["rate_gap"])
+        print(f"[best] {unit}: contamination={r['contamination']} "
               f"rate_gap={r['rate_gap']:.4f} f1={r['f1']:.3f}", flush=True)
     print("MLFLOW_RUN_ID", run.info.run_id, flush=True)

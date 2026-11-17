@@ -37,8 +37,8 @@ JUDGE_MODEL = os.environ.get(
 )
 
 INSTRUCTIONS = (
-    "You are evaluating a root-cause-analysis agent for a 5G core network "
-    "(AMF/SMF/UPF). The agent request (question plus retrieved evidence "
+    "You are evaluating a root-cause-analysis agent for a mfg core "
+    "(station/job/line). The agent request (question plus retrieved evidence "
     "records) is in {{ inputs }} and the agent's response is in "
     "{{ outputs }}. Judge whether the response is GROUNDED IN EVIDENCE: "
     "every material factual claim (alert types, components, severities, "

@@ -1,17 +1,17 @@
 """Anomaly-model training for houprod telemetry: Feast offline -> train ->
-test/validate -> MLflow (RHOAI Experiments, Model training view).
+test/validate -> MLflow (AI platform Experiments, Model training view).
 
 The agentified version of the manual notebook flow (Telco-AIX): features
 come from the Feast offline store via point-in-time `get_historical_features`
 (the same engineered vectors the online store serves to the agent), an
-IsolationForest is trained per NF on the earliest 70% of the timeline, and
+IsolationForest is trained per unit on the earliest 70% of the timeline, and
 validated on the remaining 30% against the labeled incident windows in
-data/alerts.json (rows inside an alert window for that NF are ground-truth
-anomalies). Params, per-NF precision/recall/F1, and the model bundle are
-logged to MLflow; the run shows up in the RHOAI dashboard under
+data/alerts.json (rows inside an alert window for that unit are ground-truth
+anomalies). Params, per-unit precision/recall/F1, and the model bundle are
+logged to MLflow; the run shows up in the AI platform dashboard under
 Experiments -> houprod-anomaly (Model training).
 
-The saved bundle {nf: (model, feature_cols, threshold)} is what
+The saved bundle {unit: (model, feature_cols, threshold)} is what
 feature_repo/ingest.py --score uses for the pipeline's inference run.
 
 Requires: feature_repo/ingest.py has run (offline parquet present), and the
@@ -34,14 +34,14 @@ from sklearn.metrics import f1_score, precision_score, recall_score
 HERE = Path(__file__).resolve().parent
 COURSE = HERE.parent
 sys.path.insert(0, str(COURSE / "feature_repo"))
-from features import NF_KPIS  # noqa: E402
+from features import UNIT_KPIS  # noqa: E402
 
 TRAIN_FRACTION = 0.7
 CONTAMINATION = float(os.environ.get("ANOMALY_CONTAMINATION", "0.05"))
 
 
 def _workspace_shim() -> None:
-    """Workspace-scoped MLflow on RHOAI; same shim as agent/_enable_mlflow."""
+    """Workspace-scoped MLflow on the AI platform; same shim as agent/_enable_mlflow."""
     ws = os.environ.get("MLFLOW_WORKSPACE")
     if not ws:
         return
@@ -70,28 +70,28 @@ def _workspace_shim() -> None:
     rest_store.http_request = _shim
 
 
-def historical_features(nf: str) -> pd.DataFrame:
+def historical_features(unit: str) -> pd.DataFrame:
     """Point-in-time retrieval from the Feast offline store (file source)."""
     from feast import FeatureStore
 
     repo = COURSE / "feature_repo"
     store = FeatureStore(repo_path=str(repo))
     parquet = pd.read_parquet(
-        Path(os.environ.get("FEATURE_DATA_DIR", repo / "data")) / f"{nf}_features.parquet")
+        Path(os.environ.get("FEATURE_DATA_DIR", repo / "data")) / f"{unit}_features.parquet")
     entity_df = parquet[["event_timestamp"]].copy()
-    entity_df["nf"] = nf
+    entity_df["unit"] = unit
     cols = [c for c in parquet.columns if c not in
-            ("event_timestamp", "nf", "anomaly_score", "anomaly_flag")]
-    feature_refs = [f"{nf}_kpis:{c}" for c in cols]
+            ("event_timestamp", "unit", "anomaly_score", "anomaly_flag")]
+    feature_refs = [f"{unit}_kpis:{c}" for c in cols]
     df = store.get_historical_features(entity_df=entity_df, features=feature_refs).to_df()
     return df.sort_values("event_timestamp").reset_index(drop=True)
 
 
-def label_from_alerts(nf: str, timestamps: pd.Series) -> pd.Series:
+def label_from_alerts(unit: str, timestamps: pd.Series) -> pd.Series:
     alerts = json.loads((COURSE / "data" / "alerts.json").read_text()).get("alerts", [])
     labels = pd.Series(0, index=timestamps.index)
     for alert in alerts:
-        if alert["component"].lower() != nf:
+        if alert["component"].lower() != unit:
             continue
         start = pd.Timestamp(alert["start_time"])
         end = pd.Timestamp(alert["end_time"])
@@ -113,15 +113,15 @@ def main() -> None:
             "contamination": CONTAMINATION,
             "train_fraction": TRAIN_FRACTION,
             "window": "1h rolling mean/min/max",
-            "feature_source": "feast:fivegprod (offline file source)",
+            "feature_source": "feast:mfgprod (offline file source)",
             "dataset": "hf.co/datasets/lakurella/mfgcore-prod",
         })
-        for nf in NF_KPIS:
-            df = historical_features(nf)
+        for unit in UNIT_KPIS:
+            df = historical_features(unit)
             ts = pd.to_datetime(df["event_timestamp"]).dt.tz_localize(None)
-            feature_cols = [c for c in df.columns if c not in ("event_timestamp", "nf")]
+            feature_cols = [c for c in df.columns if c not in ("event_timestamp", "unit")]
             X = df[feature_cols]
-            y = label_from_alerts(nf, ts)
+            y = label_from_alerts(unit, ts)
 
             split = int(len(df) * TRAIN_FRACTION)
             model = IsolationForest(
@@ -133,16 +133,16 @@ def main() -> None:
             y_pred = (scores < threshold).astype(int)
             y_true = y.iloc[split:]
             m = {
-                f"{nf}_precision": precision_score(y_true, y_pred, zero_division=0),
-                f"{nf}_recall": recall_score(y_true, y_pred, zero_division=0),
-                f"{nf}_f1": f1_score(y_true, y_pred, zero_division=0),
-                f"{nf}_test_anomaly_rate": float(y_pred.mean()),
-                f"{nf}_test_rows": int(len(y_true)),
+                f"{unit}_precision": precision_score(y_true, y_pred, zero_division=0),
+                f"{unit}_recall": recall_score(y_true, y_pred, zero_division=0),
+                f"{unit}_f1": f1_score(y_true, y_pred, zero_division=0),
+                f"{unit}_test_anomaly_rate": float(y_pred.mean()),
+                f"{unit}_test_rows": int(len(y_true)),
             }
             mlflow.log_metrics(m)
             metrics_all.update(m)
-            bundle[nf] = (model, feature_cols, threshold)
-            print(f"[train] {nf}: " + " ".join(f"{k.split('_',1)[1]}={v:.3f}"
+            bundle[unit] = (model, feature_cols, threshold)
+            print(f"[train] {unit}: " + " ".join(f"{k.split('_',1)[1]}={v:.3f}"
                   for k, v in m.items() if isinstance(v, float)))
 
         out = Path(os.environ.get("MODEL_OUT", "/tmp/anomaly_bundle.joblib"))
@@ -150,7 +150,7 @@ def main() -> None:
         mlflow.log_artifact(str(out), artifact_path="model")
 
         # Log a real MLflow model (Models tab) and register a version:
-        # one pyfunc that routes each row to its NF's IsolationForest.
+        # one pyfunc that routes each row to its unit's IsolationForest.
         class AnomalyBundleModel(mlflow.pyfunc.PythonModel):
             def load_context(self, context):
                 import joblib as _joblib
@@ -159,11 +159,11 @@ def main() -> None:
 
             def predict(self, context, model_input, params=None):
                 frames = []
-                for nf_key, grp in model_input.groupby("nf"):
-                    model, cols, thr = self.bundle[nf_key]
+                for unit_key, grp in model_input.groupby("unit"):
+                    model, cols, thr = self.bundle[unit_key]
                     scores = model.decision_function(grp[cols])
                     frames.append(pd.DataFrame({
-                        "nf": nf_key,
+                        "unit": unit_key,
                         "anomaly_score": scores,
                         "anomaly_flag": (scores < thr).astype(int),
                     }, index=grp.index))

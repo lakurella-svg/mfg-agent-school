@@ -4,5 +4,5 @@ namespace: agent-school
 resources:
   - serviceaccount.yaml
   - imagestream-buildconfig.yaml
-  - cronjob-noc-sweep.yaml
+  - cronjob-moc-sweep.yaml
 # ../job-ask.yaml uses generateName; create it with `oc create -f`, not apply.

@@ -1,9 +1,9 @@
 """Skill logic for the MOC Assistant.
 
-Works on the real Telco-AIX houprod dataset (https://huggingface.co/datasets/lakurella/mfgcore-prod):
-per-minute AMF/SMF/UPF KPI series plus a structured alert feed. Anomaly
+Works on the real houprod manufacturing dataset (derived from Telco-AIX) (https://huggingface.co/datasets/lakurella/mfgcore-prod):
+per-minute station/job/line KPI series plus a structured alert feed. Anomaly
 detection uses Isolation Forest, the same algorithm the source experiment
-uses, so the agent's tools behave like the original NOC pipeline.
+uses, so the agent's tools behave like the original monitoring pipeline.
 
 These functions are the single source of truth for what the agent can do.
 They are exposed two ways: in-process (agent/moc_agent.py registers them as
@@ -24,13 +24,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
 RUNBOOK_DIR = BASE_DIR / "runbooks"
 
-NF_FILES = {
-    "amf": DATA_DIR / "station_metrics.csv",
-    "smf": DATA_DIR / "job_metrics.csv",
-    "upf": DATA_DIR / "line_metrics.csv",
+UNIT_FILES = {
+    "station": DATA_DIR / "station_metrics.csv",
+    "job": DATA_DIR / "job_metrics.csv",
+    "line": DATA_DIR / "line_metrics.csv",
 }
 
-# Feature-store mode (RHOAI): when FEAST_ONLINE_URL is set, telemetry tools
+# Feature-store mode (AI platform): when FEAST_ONLINE_URL is set, telemetry tools
 # read the engineered feature vectors served by the Feast online store
 # (feature_repo/: raw KPIs + 1h aggregates + anomaly model outputs pushed by
 # the ingest/scoring pipeline) instead of the bundled CSVs. The CSV path
@@ -41,14 +41,14 @@ FEAST_CA = os.environ.get(
     "FEAST_CA", "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt")
 
 
-def _feast_online(nf: str, feature_refs: list[str]) -> dict[str, float]:
-    """Fetch features for one NF from the Feast feature server (REST)."""
+def _feast_online(unit: str, feature_refs: list[str]) -> dict[str, float]:
+    """Fetch features for one unit from the Feast feature server (REST)."""
     import ssl
     import urllib.request
 
     ctx = ssl.create_default_context(
         cafile=FEAST_CA if Path(FEAST_CA).exists() else None)
-    body = json.dumps({"features": feature_refs, "entities": {"nf": [nf]}}).encode()
+    body = json.dumps({"features": feature_refs, "entities": {"unit": [unit]}}).encode()
     req = urllib.request.Request(
         f"{FEAST_ONLINE_URL.rstrip('/')}/get-online-features",
         data=body, headers={"Content-Type": "application/json"})
@@ -56,11 +56,11 @@ def _feast_online(nf: str, feature_refs: list[str]) -> dict[str, float]:
         payload = json.loads(resp.read())
     names = payload["metadata"]["feature_names"]
     values = [r["values"][0] for r in payload["results"]]
-    return {n: v for n, v in zip(names, values) if n != "nf"}
+    return {n: v for n, v in zip(names, values) if n != "unit"}
 
 
-def _load(nf: str) -> pd.DataFrame:
-    path = NF_FILES[nf]
+def _load(unit: str) -> pd.DataFrame:
+    path = UNIT_FILES[unit]
     if not path.exists():
         raise FileNotFoundError(f"{path} missing; copy the houprod dataset into data/")
     df = pd.read_csv(path, parse_dates=["timestamp"])
@@ -71,14 +71,14 @@ def _numeric_cols(df: pd.DataFrame) -> list[str]:
     return [c for c in df.columns if c != "timestamp"]
 
 
-def get_kpi_summary(nf: str = "all", window_minutes: int = 60) -> str:
-    """Summarize KPIs for amf|smf|upf|all over the last window of the series."""
-    nfs = list(NF_FILES) if nf.lower() == "all" else [nf.lower()]
-    if any(n not in NF_FILES for n in nfs):
-        return json.dumps({"error": f"unknown nf '{nf}', use amf|smf|upf|all"})
+def get_kpi_summary(unit: str = "all", window_minutes: int = 60) -> str:
+    """Summarize KPIs for station|job|line|all over the last window of the series."""
+    units = list(UNIT_FILES) if unit.lower() == "all" else [unit.lower()]
+    if any(n not in UNIT_FILES for n in units):
+        return json.dumps({"error": f"unknown unit '{unit}', use station|job|line|all"})
     if FEAST_ONLINE_URL:
         out = {}
-        for n in nfs:
+        for n in units:
             cols = _numeric_cols(_load(n))
             refs = [f"{n}_kpis:{c}_1h_{a}" for c in cols for a in ("mean", "min", "max")]
             feats = _feast_online(n, refs)
@@ -91,7 +91,7 @@ def get_kpi_summary(nf: str = "all", window_minutes: int = 60) -> str:
         return json.dumps({"window_minutes": 60, "summary": out,
                            "source": "feast-online (1h rolling aggregates)"})
     out = {}
-    for n in nfs:
+    for n in units:
         df = _load(n)
         cutoff = df["timestamp"].max() - pd.Timedelta(minutes=window_minutes)
         win = df[df["timestamp"] >= cutoff]
@@ -106,22 +106,22 @@ def get_kpi_summary(nf: str = "all", window_minutes: int = 60) -> str:
     return json.dumps({"window_minutes": window_minutes, "summary": out})
 
 
-def detect_anomalies(nf: str = "all", contamination: float = 0.02) -> str:
-    """Isolation Forest anomaly detection per NF, as in the source experiment.
+def detect_anomalies(unit: str = "all", contamination: float = 0.02) -> str:
+    """Isolation Forest anomaly detection per unit, as in the source experiment.
 
     Returns the anomalous timestamps with the KPIs that deviate most from
-    that NF's mean (top 3 per row), most recent first.
+    that unit's mean (top 3 per row), most recent first.
     """
-    nfs = list(NF_FILES) if nf.lower() == "all" else [nf.lower()]
-    if any(n not in NF_FILES for n in nfs):
-        return json.dumps({"error": f"unknown nf '{nf}', use amf|smf|upf|all"})
+    units = list(UNIT_FILES) if unit.lower() == "all" else [unit.lower()]
+    if any(n not in UNIT_FILES for n in units):
+        return json.dumps({"error": f"unknown unit '{unit}', use station|job|line|all"})
     if FEAST_ONLINE_URL:
         # Consume the pipeline's inference results: the IsolationForest
         # trained in training/train_anomaly.py (tracked in Experiments)
         # scores the latest engineered vector during ingest --score, and the
         # online store serves score + flag alongside the raw KPIs.
         findings = []
-        for n in nfs:
+        for n in units:
             cols = _numeric_cols(_load(n))
             refs = [f"{n}_kpis:anomaly_score", f"{n}_kpis:anomaly_flag"] + \
                    [f"{n}_kpis:{c}" for c in cols]
@@ -132,7 +132,7 @@ def detect_anomalies(nf: str = "all", contamination: float = 0.02) -> str:
                  for c in cols if feats.get(c) is not None}
             top = sorted(z, key=lambda c: abs(z[c]), reverse=True)[:3]
             findings.append({
-                "nf": n,
+                "unit": n,
                 "anomaly_score": round(float(feats.get("anomaly_score", 0.0)), 4),
                 "anomalous": bool(int(feats.get("anomaly_flag", 0))),
                 "deviating_kpis": {
@@ -144,7 +144,7 @@ def detect_anomalies(nf: str = "all", contamination: float = 0.02) -> str:
             "source": "feast-online (IsolationForest scored in the feature pipeline)",
             "anomalies": findings})
     findings = []
-    for n in nfs:
+    for n in units:
         df = _load(n)
         cols = _numeric_cols(df)
         model = IsolationForest(contamination=contamination, random_state=42)
@@ -156,7 +156,7 @@ def detect_anomalies(nf: str = "all", contamination: float = 0.02) -> str:
             findings.append(
                 {
                     "timestamp": str(row["timestamp"]),
-                    "nf": n,
+                    "unit": n,
                     "deviating_kpis": {
                         k: {"value": round(float(row[k]), 2), "zscore": round(float(z[k]), 2)}
                         for k in top.index
@@ -212,11 +212,11 @@ TOOL_SCHEMAS = [
         "type": "function",
         "function": {
             "name": "get_kpi_summary",
-            "description": "Summarize 5G core KPIs for a network function (amf|smf|upf|all) over the last N minutes of the series.",
+            "description": "Summarize mfg core KPIs for a production unit (station|job|line|all) over the last N minutes of the series.",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "nf": {"type": "string", "enum": ["amf", "smf", "upf", "all"]},
+                    "unit": {"type": "string", "enum": ["station", "job", "line", "all"]},
                     "window_minutes": {"type": "integer", "default": 60},
                 },
             },
@@ -226,11 +226,11 @@ TOOL_SCHEMAS = [
         "type": "function",
         "function": {
             "name": "detect_anomalies",
-            "description": "Run Isolation Forest anomaly detection on AMF/SMF/UPF KPI series and return anomalous timestamps with their most deviating KPIs.",
+            "description": "Run Isolation Forest anomaly detection on station/job/line KPI series and return anomalous timestamps with their most deviating KPIs.",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "nf": {"type": "string", "enum": ["amf", "smf", "upf", "all"]},
+                    "unit": {"type": "string", "enum": ["station", "job", "line", "all"]},
                     "contamination": {"type": "number", "default": 0.02},
                 },
             },
@@ -244,7 +244,7 @@ TOOL_SCHEMAS = [
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "component": {"type": "string", "enum": ["AMF", "SMF", "UPF", "all"]},
+                    "component": {"type": "string", "enum": ["STATION", "JOB", "LINE", "all"]},
                 },
             },
         },

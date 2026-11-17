@@ -78,7 +78,7 @@ def find(raw, ns, kind, name_prefix):
 
 # ---------------------------------------------------------------- course configs
 def build_101(raw, manual_steps):
-    """101 NOC Assistant. Ported to the cmds step format (QA F12, 2026-07-28):
+    """101 MOC Assistant. Ported to the cmds step format (QA F12, 2026-07-28):
     per-command terminal transcripts are embedded literals reconstructed from the
     July 28 Venice live session (steps marked reconstructed); steps 3 and 7 replay
     the real captured build / Ray-submit logs verbatim via assets.logs."""
@@ -122,10 +122,10 @@ def build_101(raw, manual_steps):
                                   if e['meta']['name'] in ('101-noc-assistant', '5gprod-anomaly-sweep')]
     A['registry'] = [x for x in raw['rest'].get('model_registry', [])
                      if x['m']['name'] == '5gprod-anomaly-isolationforest']
-    A['featureViews'] = [{'name': 'amf_kpis', 'store': 'fivegprod', 'features': 46, 'storeType': 'Online'},
- {'name': 'smf_kpis', 'store': 'fivegprod', 'features': 34, 'storeType': 'Online'},
- {'name': 'upf_kpis', 'store': 'fivegprod', 'features': 38, 'storeType': 'Online'}]
-    A['savedDatasets'] = ['amf_anomaly_training', 'smf_anomaly_training', 'upf_anomaly_training']
+    A['featureViews'] = [{'name': 'station_kpis', 'store': 'mfgprod', 'features': 46, 'storeType': 'Online'},
+ {'name': 'job_kpis', 'store': 'mfgprod', 'features': 34, 'storeType': 'Online'},
+ {'name': 'line_kpis', 'store': 'mfgprod', 'features': 38, 'storeType': 'Online'}]
+    A['savedDatasets'] = ['station_anomaly_training', 'job_anomaly_training', 'line_anomaly_training']
     A['jobsTimeline'] = [{'name': 'feast-bootstrap', 'status': 'Succeeded', 'after': 5},
  {'name': 'feast-save-datasets', 'status': 'Succeeded', 'after': 5},
  {'name': 'noc-ask-jb2qw', 'status': 'Succeeded', 'after': 6},
@@ -215,20 +215,20 @@ def build_101(raw, manual_steps):
             'out': [[0, 'job.batch/feast-bootstrap created']]},
            {'cmd': 'oc logs -f job/feast-bootstrap -n agent-school',
             'out': [[800, '[pip] installing feast pandas pyarrow scikit-learn ...'],
-                    [2400, '[ingest] amf: 1441 rows -> data/amf_features.parquet'],
-                    [2700, '[ingest] smf: 1441 rows -> data/smf_features.parquet'],
-                    [3000, '[ingest] upf: 1441 rows -> data/upf_features.parquet'],
-                    [3400, 'Applying feature store objects: entity nf, 3 feature views, 1 feature service'],
-                    [3900, '[push] amf: latest vector (2025-01-17 12:01:55) -> online store'],
-                    [4150, '[push] smf: latest vector (2025-01-17 12:01:55) -> online store'],
-                    [4400, '[push] upf: latest vector (2025-01-17 12:01:55) -> online store']]},
+                    [2400, '[ingest] station: 1441 rows -> data/station_features.parquet'],
+                    [2700, '[ingest] job: 1441 rows -> data/job_features.parquet'],
+                    [3000, '[ingest] line: 1441 rows -> data/line_features.parquet'],
+                    [3400, 'Applying feature store objects: entity unit, 3 feature views, 1 feature service'],
+                    [3900, '[push] station: latest vector (2025-01-17 12:01:55) -> online store'],
+                    [4150, '[push] job: latest vector (2025-01-17 12:01:55) -> online store'],
+                    [4400, '[push] line: latest vector (2025-01-17 12:01:55) -> online store']]},
            {'cmd': 'oc apply -f 101-moc-assistant/deploy/ocp/rome/job-feast-save-datasets.yaml',
             'out': [[0, 'job.batch/feast-save-datasets created'],
-                    [1400, '... Succeeded: 3 SavedDatasets (amf/smf/upf_anomaly_training)']]}],
+                    [1400, '... Succeeded: 3 SavedDatasets (station/job/line_anomaly_training)']]}],
   'playback': {'reconstructed': True,
                'dashboard': {'panel': 'featurestore',
                              'note': 'Offline parquet engineered, features applied, latest vectors pushed '
-                                     'online. The agent can now read live network state.'}}},
+                                     'online. The agent can now read live production state.'}}},
  {'action': {'kind': 'create-job', 'label': 'Create the noc-ask Job (one agent run = one Job)'},
   'cmds': [{'cmd': 'oc create -f 101-moc-assistant/deploy/ocp/job-ask.yaml',
             'out': [[0, 'job.batch/noc-ask-jb2qw created']]},
@@ -238,12 +238,12 @@ def build_101(raw, manual_steps):
                      'store'],
                     [2200, '[agent] reasoning with kimi-linear-48b-a3b (in-cluster vLLM) ...'],
                     [3400, 'ANSWER:'],
-                    [3700, 'The 5G core is experiencing an AMF registration storm with cascading effects.'],
-                    [4000, '1. Immediate (0-15 min): rate-limit initial registrations at the AMF;'],
-                    [4300, '   verify N4 interface connectivity between SMF and UPF.'],
-                    [4600, '2. Medium-term (15-60 min): review registration patterns to identify the'],
-                    [4900, '   source; implement proper load balancing for AMF instances.'],
-                    [5200, 'The network is degraded but not in complete failure.'],
+                    [3700, 'The mfg core is experiencing a station check-in storm with cascading effects.'],
+                    [4000, '1. Immediate (0-15 min): rate-limit station check-ins at the station gateways;'],
+                    [4300, '   verify the command link between job orchestration and the line.'],
+                    [4600, '2. Medium-term (15-60 min): review check-in patterns to identify the'],
+                    [4900, '   source; balance load across station-gateway instances.'],
+                    [5200, 'Production is degraded but not stopped.'],
                     [5600, '[mlflow] trace flushed to experiment 101-noc-assistant']]}],
   'playback': {'reconstructed': True,
                'dashboard': {'panel': 'experiments',
@@ -597,6 +597,50 @@ def build_302(raw, S):
         'experiments', 'Agents grading agents, with the grades stored as platform data: decision correctness, numeric groundedness, QoS safety, LLM groundedness.', False)]
     return A, steps
 
+
+# 101 is rebranded (manufacturing / MOC) from the Venice capture: lookups into
+# the raw tape above use the recorded names; this mapping is applied to the
+# finished 101 tape so every name the portal shows matches the course repo.
+# Deterministic, so the byte-identical regeneration check still holds.
+REBRAND_101_NOTE = ('names in this replay are mapped from the recorded run to the manufacturing '
+                    'course (noc-assistant -> moc-assistant, fivegprod -> mfgprod, 5gprod -> houprod, fenar/5gcore-prod -> lakurella/mfgcore-prod, '
+                    'amf/smf/upf -> station/job/line, telecom KPI and alert names -> manufacturing ones).')
+REBRAND_101 = [(re.compile(a), b) for a, b in [
+    (r'noc-assistant', 'moc-assistant'), (r'noc-sweep', 'moc-sweep'), (r'noc-ask', 'moc-ask'),
+    (r'noc_agent', 'moc_agent'), (r'noc_telemetry', 'moc_telemetry'),
+    (r'fenar/5gcore-prod', 'lakurella/mfgcore-prod'), (r'fivegprod', 'mfgprod'), (r'5gprod', 'houprod'), (r'5G core', 'mfg core'), (r'\bNOC\b', 'MOC'),
+    (r'amf_registration_storm', 'station_checkin_storm'), (r'upf_resource_exhaustion', 'line_resource_exhaustion'),
+    (r'smf_session_management_failure', 'job_management_failure'),
+    (r'REGISTRATION_STORM', 'CHECKIN_STORM'), (r'SESSION_MANAGEMENT_FAILURE', 'JOB_MANAGEMENT_FAILURE'),
+    (r'\bhttp_connectivity\b', 'mfg_link_connectivity'), (r'\bcpu_utilization\b', 'capacity_utilization_pct'),
+    (r'\bmemory_utilization\b', 'buffer_occupancy_pct'), (r'\bsession_setup_rate\b', 'job_setup_success_rate'),
+    (r'\bauthentication_success_rate\b', 'station_auth_success_rate'), (r'\bn1n2_message_rate\b', 'mes_message_rate'),
+    (r'\bregistration_success_rate\b', 'station_checkin_success_rate'),
+    (r'\bslice_selection_success_rate\b', 'line_assignment_success_rate'),
+    (r'\bngap_success_rate\b', 'control_handshake_success_rate'), (r'\bregistration_rate\b', 'station_checkin_rate'),
+    (r'\bnas_security_success_rate\b', 'device_security_success_rate'),
+    (r'\bsession_establishment_rate\b', 'job_release_rate'), (r'\bsession_modification_rate\b', 'job_change_rate'),
+    (r'\bpolicy_installation_rate\b', 'recipe_apply_rate'), (r'\bn4_message_rate\b', 'line_command_rate'),
+    (r'\bpfcp_message_rate\b', 'program_download_rate'), (r'\bsession_success_rate\b', 'job_completion_success_rate'),
+    (r'\bpacket_processing_rate\b', 'units_processed_rate'), (r'\btunnel_establishment_rate\b', 'lot_start_rate'),
+    (r'\bbuffer_utilization\b', 'conveyor_fill_pct'), (r'\bqos_flow_success_rate\b', 'spec_compliance_rate'),
+    (r'\bthroughput_mbps\b', 'line_throughput'), (r'\bpacket_drop_rate\b', 'scrap_rate'), (r'\blatency_ms\b', 'cycle_time'),
+    (r'\bamf(?=_|\b)', 'station'), (r'\bsmf(?=_|\b)', 'job'), (r'\bupf(?=_|\b)', 'line'),
+    (r'\bAMF\b', 'STATION'), (r'\bSMF\b', 'JOB'), (r'\bUPF\b', 'LINE'),
+]]
+
+
+def rebrand_101(o):
+    if isinstance(o, dict):
+        return {rebrand_101(k): rebrand_101(v) for k, v in o.items()}
+    if isinstance(o, list):
+        return [rebrand_101(v) for v in o]
+    if isinstance(o, str):
+        for pat, rep in REBRAND_101:
+            o = pat.sub(rep, o)
+    return o
+
+
 BUILDERS = {'101': build_101, '201': build_201, '202': build_202, '301': build_301, '302': build_302}
 
 def main():
@@ -604,8 +648,11 @@ def main():
     raw = load_raw(raw_path)
     manual_steps = parse_manual(manual_path)
     assets, steps = BUILDERS[course](raw, manual_steps)
-    tape = {'tapeVersion': 1, 'course': course, 'title': {'101':'NOC Assistant','201':'RCA Investigator','202':'Fraud Triage','301':'Closed-Loop NetOps','302':'Energy Optimizer'}[course],
+    tape = {'tapeVersion': 1, 'course': course, 'title': {'101':'MOC Assistant','201':'RCA Investigator','202':'Fraud Triage','301':'Closed-Loop NetOps','302':'Energy Optimizer'}[course],
             'cluster': cluster, 'capturedAt': raw['capturedAt'], 'steps': steps, 'assets': assets}
+    if course == '101':
+        tape['steps'], tape['assets'] = rebrand_101(steps), rebrand_101(assets)
+        tape['rebrand'] = REBRAND_101_NOTE
     s = json.dumps(tape, separators=(',', ':'))
     open(out_path, 'w').write(s)
     print(f"{out_path}: {len(s)//1024} KB, {len(steps)} steps, "

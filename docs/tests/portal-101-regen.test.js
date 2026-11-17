@@ -32,7 +32,7 @@ const BASE = process.env.BASE_URL || 'http://localhost:8777';
   // F5: sweep visible only post-run (it ran) — sanity that reveal survived
   await page.evaluate(() => go('experiments'));
   const xp = await page.evaluate(() => document.getElementById('content').innerText);
-  check('sweep experiment present after full run', xp.includes('5gprod-anomaly-sweep'));
+  check('sweep experiment present after full run', xp.includes('houprod-anomaly-sweep'));
   // terminal replayed the curated ray log
   const term = await page.evaluate(() => document.getElementById('tout').innerText);
   check('curated ray-submit log replayed', term.includes('Job submission server address') && term.includes("succeeded"));

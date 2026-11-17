@@ -3,19 +3,19 @@
 Steps (the pieces the revenueassurance notebooks used to do by hand, as a
 repeatable pipeline):
 
-1. Load the per-NF telemetry (HuggingFace `lakurella/mfgcore-prod` when
+1. Load the per-unit telemetry (HuggingFace `lakurella/mfgcore-prod` when
    DATASET_SOURCE=hf, else the CSVs bundled with the course).
 2. Engineer features: 1-hour rolling mean/min/max per KPI (the vectors the
    anomaly model trains and scores on).
-3. Write the full engineered timeseries to data/<nf>_features.parquet —
+3. Write the full engineered timeseries to data/<unit>_features.parquet —
    the offline source used by training/train_anomaly.py via
    `get_historical_features`.
-4. Push the latest engineered row per NF to the Feast online store, so
-   `get-online-features` serves the current network state to the agent.
+4. Push the latest engineered row per unit to the Feast online store, so
+   `get-online-features` serves the current production state to the agent.
 
 With --score, also load the trained IsolationForest bundle (downloaded from
 the MLflow run by training/train_anomaly.py) and push anomaly_score /
-anomaly_flag per NF — the "anomaly inference run" of the data pipeline.
+anomaly_flag per unit — the "anomaly inference run" of the data pipeline.
 
 Run from the feature_repo directory (feature_store.yaml alongside).
 """
@@ -28,7 +28,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from features import AGGS, NF_FILES, NF_KPIS  # noqa: F401  (shared column definitions)
+from features import AGGS, UNIT_FILES, UNIT_KPIS  # noqa: F401  (shared column definitions)
 
 HERE = Path(__file__).resolve().parent
 DATA_DIR = Path(os.environ.get("FEATURE_DATA_DIR", HERE / "data"))
@@ -37,28 +37,28 @@ HF_BASE = "https://huggingface.co/datasets/lakurella/mfgcore-prod/resolve/main"
 WINDOW = 60  # samples ~= 1 hour at 1-minute resolution
 
 
-def load_raw(nf: str) -> pd.DataFrame:
+def load_raw(unit: str) -> pd.DataFrame:
     if os.environ.get("DATASET_SOURCE", "local") == "hf":
-        url = f"{HF_BASE}/{NF_FILES[nf]}"
+        url = f"{HF_BASE}/{UNIT_FILES[unit]}"
         # the dataset is public; send HF_TOKEN when set (e.g. a private fork)
         token = os.environ.get("HF_TOKEN")
         opts = {"Authorization": f"Bearer {token}"} if token else None
         df = pd.read_csv(url, storage_options=opts)
     else:
-        df = pd.read_csv(COURSE_DATA / NF_FILES[nf])
+        df = pd.read_csv(COURSE_DATA / UNIT_FILES[unit])
     df["event_timestamp"] = pd.to_datetime(df.pop("timestamp"))
     return df.sort_values("event_timestamp").reset_index(drop=True)
 
 
-def engineer(nf: str, df: pd.DataFrame) -> pd.DataFrame:
-    kpis = NF_KPIS[nf]
+def engineer(unit: str, df: pd.DataFrame) -> pd.DataFrame:
+    kpis = UNIT_KPIS[unit]
     out = df[["event_timestamp"] + kpis].copy()
     roll = out[kpis].rolling(WINDOW, min_periods=1)
     for agg in ("mean", "min", "max"):
         stats = getattr(roll, agg)()
         for k in kpis:
             out[f"{k}_1h_{agg}"] = stats[k]
-    out["nf"] = nf
+    out["unit"] = unit
     out["anomaly_score"] = 0.0
     out["anomaly_flag"] = 0
     return out
@@ -66,7 +66,7 @@ def engineer(nf: str, df: pd.DataFrame) -> pd.DataFrame:
 
 def _enable_model_tracing():
     """Optional: emit an MLflow trace per scoring call, linked to the
-    anomaly-detector LoggedModel — the model's Traces tab in the RHOAI
+    anomaly-detector LoggedModel — the model's Traces tab in the AI platform
     dashboard then shows every pipeline inference run (inputs, score, flag,
     latency) with model-version lineage. Needs the MLFLOW_* envs of the
     rome overlay; silently disabled elsewhere. Never breaks the pipeline."""
@@ -113,7 +113,7 @@ def _enable_model_tracing():
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--score", metavar="MODEL_BUNDLE",
-                        help="joblib bundle {nf: (model, feature_cols, threshold)}; "
+                        help="joblib bundle {unit: (model, feature_cols, threshold)}; "
                              "score latest window and push anomaly features")
     parser.add_argument("--no-push", action="store_true",
                         help="only write offline parquet (no online push)")
@@ -121,11 +121,11 @@ def main() -> None:
 
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     frames = {}
-    for nf in NF_KPIS:
-        eng = engineer(nf, load_raw(nf))
-        frames[nf] = eng
-        eng.to_parquet(DATA_DIR / f"{nf}_features.parquet", index=False)
-        print(f"[ingest] {nf}: {len(eng)} rows -> {DATA_DIR}/{nf}_features.parquet")
+    for unit in UNIT_KPIS:
+        eng = engineer(unit, load_raw(unit))
+        frames[unit] = eng
+        eng.to_parquet(DATA_DIR / f"{unit}_features.parquet", index=False)
+        print(f"[ingest] {unit}: {len(eng)} rows -> {DATA_DIR}/{unit}_features.parquet")
 
     if args.score:
         import contextlib
@@ -134,23 +134,23 @@ def main() -> None:
 
         mlf = _enable_model_tracing()
         bundle = joblib.load(args.score)
-        for nf, eng in frames.items():
-            model, cols, threshold = bundle[nf]
+        for unit, eng in frames.items():
+            model, cols, threshold = bundle[unit]
             latest = eng.iloc[[-1]][cols]
-            span_cm = (mlf.start_span(name=f"anomaly-inference/{nf}")
+            span_cm = (mlf.start_span(name=f"anomaly-inference/{unit}")
                        if mlf else contextlib.nullcontext())
             with span_cm as span:
                 score = float(model.decision_function(latest)[0])
                 flag = int(score < threshold)
                 if span is not None:
-                    span.set_inputs({"nf": nf,
+                    span.set_inputs({"unit": unit,
                                      "event_timestamp": str(eng["event_timestamp"].iloc[-1]),
                                      "features": latest.iloc[0].round(3).to_dict()})
                     span.set_outputs({"anomaly_score": score, "anomaly_flag": flag,
                                       "threshold": threshold})
             eng.iloc[-1, eng.columns.get_loc("anomaly_score")] = score
             eng.iloc[-1, eng.columns.get_loc("anomaly_flag")] = flag
-            print(f"[score] {nf}: anomaly_score={score:.4f} flag={flag}")
+            print(f"[score] {unit}: anomaly_score={score:.4f} flag={flag}")
 
     if args.no_push:
         return
@@ -158,11 +158,11 @@ def main() -> None:
     from feast import FeatureStore
 
     store = FeatureStore(repo_path=str(HERE))
-    for nf, eng in frames.items():
+    for unit, eng in frames.items():
         latest = eng.tail(1).reset_index(drop=True)
-        store.push(f"{nf}_push", latest, to=__import__(
+        store.push(f"{unit}_push", latest, to=__import__(
             "feast").data_source.PushMode.ONLINE)
-        print(f"[push] {nf}: latest vector ({latest['event_timestamp'].iloc[0]}) -> online store")
+        print(f"[push] {unit}: latest vector ({latest['event_timestamp'].iloc[0]}) -> online store")
 
 
 if __name__ == "__main__":

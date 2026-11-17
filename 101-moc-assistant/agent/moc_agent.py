@@ -1,6 +1,6 @@
 """MOC Assistant: a single-agent tool-calling loop.
 
-Runs against any OpenAI-compatible endpoint (vLLM on RHOAI, MaaS, Llama
+Runs against any OpenAI-compatible endpoint (vLLM on the AI platform, MaaS, Llama
 Stack's compatible API). The harness is deliberately small so the loop is
 readable: plan -> tool call -> observe -> repeat -> answer.
 
@@ -22,7 +22,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from tools.lib import TOOL_HANDLERS, TOOL_SCHEMAS  # noqa: E402
 
 SYSTEM_PROMPT = (
-    "You are a MOC assistant for a mfg core (AMF, SMF, UPF). "
+    "You are a MOC assistant for a mfg core (station, job, line). "
     "Use tools to inspect telemetry and runbooks before answering. "
     "Ground every claim in tool output; never invent KPI values. "
     "Finish with: findings, probable cause, and recommended next action."
@@ -148,8 +148,8 @@ def run_offline(question: str) -> str:
     lead = critical[0]
     component = lead["component"].lower()
 
-    anomalies = json.loads(run_tool("detect_anomalies", {"nf": component}))["anomalies"]
-    summary = json.loads(run_tool("get_kpi_summary", {"nf": component, "window_minutes": 60}))
+    anomalies = json.loads(run_tool("detect_anomalies", {"unit": component}))["anomalies"]
+    summary = json.loads(run_tool("get_kpi_summary", {"unit": component, "window_minutes": 60}))
     guidance = json.loads(run_tool("search_runbooks", {"query": lead["type"].replace("_", " ").lower()}))
     runbook = guidance["results"][0]["runbook"] if guidance["results"] else "none found"
 
@@ -166,9 +166,9 @@ def run_offline(question: str) -> str:
 
 
 def _enable_mlflow() -> None:
-    """Optional: mirror agent traces to MLflow (RHOAI 3.x Experiments tab).
+    """Optional: mirror agent traces to MLflow (AI platform Experiments tab).
 
-    Plain MLflow needs only MLFLOW_TRACKING_URI. RHOAI's managed MLflow is
+    Plain MLflow needs only MLFLOW_TRACKING_URI. The AI platform's managed MLflow is
     workspace-scoped and RBAC-fronted: every request must carry an
     X-MLFLOW-WORKSPACE header (the data science project name) and a Bearer
     token authorized on that namespace. Set MLFLOW_WORKSPACE to enable the
@@ -185,7 +185,7 @@ def _enable_mlflow() -> None:
                 sa_token = Path("/var/run/secrets/kubernetes.io/serviceaccount/token")
                 if sa_token.exists():
                     os.environ["MLFLOW_TRACKING_TOKEN"] = sa_token.read_text().strip()
-            # RHOAI's MLflow serves the cluster-internal service cert
+            # The AI platform's MLflow serves the cluster-internal service cert
             os.environ.setdefault("MLFLOW_TRACKING_INSECURE_TLS", "true")
 
             from mlflow.utils import rest_utils
@@ -195,7 +195,7 @@ def _enable_mlflow() -> None:
             def _with_workspace(host_creds, endpoint, method, *a, **kw):
                 headers = dict(kw.pop("extra_headers", None) or {})
                 headers["X-MLFLOW-WORKSPACE"] = workspace
-                # RHOAI serves the MLflow API under /mlflow but the OTLP
+                # The AI platform serves the MLflow API under /mlflow but the OTLP
                 # span-ingest route at the server root. Rewriting the host for
                 # /v1/traces keeps span data in the tracking store (required
                 # by server-side LLM judges), instead of the artifact-store
@@ -228,7 +228,7 @@ def _enable_mlflow() -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="MOC Assistant agent")
-    parser.add_argument("question", nargs="?", default="Why is UPF throughput degraded?")
+    parser.add_argument("question", nargs="?", default="Why is line throughput degraded?")
     parser.add_argument("--offline", action="store_true", help="run scripted episode without an LLM endpoint")
     args = parser.parse_args()
 

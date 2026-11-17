@@ -1,9 +1,9 @@
 # Rome-sandbox overlay for 101 (see shared/manifests/vllm-rhoai.md, Option E).
 # Points the agent at the in-cluster Kimi-Linear endpoint served by vLLM on
-# RHOAI, and generates the llm-credentials Secret the base manifests expect.
+# AI platform, and generates the llm-credentials Secret the base manifests expect.
 #
 #   oc apply -k deploy/ocp/rome        # ImageStream/BuildConfig + CronJob + Secret
-#   oc start-build noc-assistant --follow
+#   oc start-build moc-assistant --follow
 #   oc create -f deploy/ocp/job-ask.yaml
 #
 # The predictor Service is headless, so the port (:8080) is explicit; the
@@ -17,7 +17,7 @@ resources:
   - mlflow-rbac.yaml
   - mlflow-workspace-rbac.yaml   # SA-group edit: covers KubeRay's generated oauth-proxy SAs
   - kueue.yaml                   # LocalQueue (cluster prereqs in file header)
-  - featurestore-fivegprod.yaml   # Feast store CR (see file header for first-boot note)
+  - featurestore-mfgprod.yaml   # Feast store CR (see file header for first-boot note)
 
 secretGenerator:
   - name: llm-credentials
@@ -26,7 +26,7 @@ secretGenerator:
       - LLM_API_KEY=none
       - LLM_MODEL=kimi-linear-48b-a3b
 
-# Every agent run lands in the RHOAI Experiments tab: the base manifests
+# Every agent run lands in the AI platform Experiments tab: the base manifests
 # import this ConfigMap as optional env, the agent's _enable_mlflow() does
 # the workspace-header + ServiceAccount-token handshake (see agent/ and
 # mlflow-rbac.yaml).
@@ -44,7 +44,7 @@ configMapGenerator:
   # for detect_anomalies. Absent on non-Rome clusters -> CSV mode.
   - name: feature-store-client
     literals:
-      - FEAST_ONLINE_URL=https://feast-fivegprod-online.agent-school.svc.cluster.local:443
+      - FEAST_ONLINE_URL=https://feast-mfgprod-online.agent-school.svc.cluster.local:443
 
 generatorOptions:
   disableNameSuffixHash: true

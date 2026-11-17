@@ -1,6 +1,6 @@
-# Course 101 Execution Manual: NOC Assistant
+# Course 101 Execution Manual: MOC Assistant
 
-A step-by-step guide for running the 101 NOC Assistant course on an OpenShift AI cluster. Follow it top to bottom and you will finish with a working LLM agent that watches a 5G core, backed by a Feast feature store, tracked in MLflow, with a distributed Ray tuning sweep admitted through Kueue.
+A step-by-step guide for running the 101 MOC Assistant course on an OpenShift cluster with the AI platform installed. Follow it top to bottom and you will finish with a working LLM agent that watches a mfg core, backed by a Feast feature store, tracked in MLflow, with a distributed Ray tuning sweep admitted through Kueue.
 
 Every step below has three parts: **Why** explains what the step is for and what it means in the architecture, **Do** gives the exact action, and **Expect** gives the success signal to check before moving on.
 
@@ -11,9 +11,9 @@ You do not have to deploy anything to study this course. The reference deploymen
 | What | Where |
 |---|---|
 | OpenShift console | `https://console-openshift-console.apps.rome.narlabs.io` or `.venice.` |
-| RHOAI dashboard | `https://rh-ai.apps.rome.narlabs.io` or `.venice.` |
-| Agent runs and traces | RHOAI dashboard, Develop & train, Experiments, workspace `agent-school` |
-| Feature store | RHOAI dashboard, Feature store, project `fivegprod` |
+| AI platform dashboard | `https://rh-ai.apps.rome.narlabs.io` or `.venice.` |
+| Agent runs and traces | AI platform dashboard, Develop & train, Experiments, workspace `agent-school` |
+| Feature store | AI platform dashboard, Feature store, project `mfgprod` |
 | Ray sweep results | Experiments, `houprod-anomaly-sweep` |
 | Workload metrics (Kueue) | Observe & monitor, Workload metrics, project `agent-school` |
 | The registered anomaly model | AI hub, Models, Registry, `houprod-anomaly-isolationforest` |
@@ -21,7 +21,7 @@ You do not have to deploy anything to study this course. The reference deploymen
 
 ## What you will build
 
-The agent is a plain Kubernetes workload (Job or CronJob) that answers NOC questions. Its tools read live network state from a Feast online store. Every run is traced to the workspace MLflow. A RayJob sweeps IsolationForest contamination settings on a throwaway Ray cluster, admitted by Kueue.
+The agent is a plain Kubernetes workload (Job or CronJob) that answers MOC questions. Its tools read live production state from a Feast online store. Every run is traced to the workspace MLflow. A RayJob sweeps IsolationForest contamination settings on a throwaway Ray cluster, admitted by Kueue.
 
 The big idea of 101 is **Agent-as-a-Workload**: an agent is not a special platform object. It is a container with an identity, config, and an LLM endpoint, so everything Kubernetes already gives you (RBAC, quotas, audit, scheduling) applies to it unchanged.
 
@@ -31,19 +31,19 @@ Before touching the steps, it helps to see the machine from the inside. 101 is t
 
 ### Loop 1 · Data & training — build the truth
 
-In production, the telemetry is born inside the network functions: PNFs, VNFs and CNFs (AMF, SMF, UPF and friends) expose metrics via OpenTelemetry exporters, an OTel Collector scrapes them into Prometheus, and a feature-engineering job periodically materializes them into the Feast offline store. **In this course, the published 5G-core dataset ([`data/`](./data/), one real KPI row per NF per minute) stands in for the OTel → Prometheus harvest** — everything downstream of Feast runs live on the cluster, unchanged from the production shape.
+In production, the telemetry is born on the shop floor: station gateways, the job orchestration layer (MES) and line controllers expose metrics via OpenTelemetry exporters, an OTel Collector scrapes them into Prometheus, and a feature-engineering job periodically materializes them into the Feast offline store. **In this course, the published mfg-core dataset ([`data/`](./data/), one real KPI row per unit per minute) stands in for the OTel → Prometheus harvest** — everything downstream of Feast runs live on the cluster, unchanged from the production shape.
 
 ```mermaid
 flowchart LR
-  subgraph NET["5G Core (PNF/VNF/CNF)"]
-    AMF["AMF"] --> OTEL["OTel exporters + Collector"]
-    SMF["SMF"] --> OTEL
-    UPF["UPF"] --> OTEL
+  subgraph NET["Mfg core (shop floor)"]
+    STATION["Stations"] --> OTEL["OTel exporters + Collector"]
+    JOB["Job orchestration (MES)"] --> OTEL
+    LINE["Lines"] --> OTEL
   end
   OTEL --> PROM["Prometheus (metrics TSDB)"]
   PROM -. "stand-in: data/*.csv (published houprod dataset)" .-> ENG
-  subgraph RHOAI["RHOAI · Develop & train"]
-    ENG["feature engineering<br/>feature_repo/ingest.py<br/>1h rolling mean/min/max per KPI"] --> OFF["Feast offline store<br/>parquet per NF (PVC)"]
+  subgraph AIP["AI platform · Develop & train"]
+    ENG["feature engineering<br/>feature_repo/ingest.py<br/>1h rolling mean/min/max per KPI"] --> OFF["Feast offline store<br/>parquet per unit (PVC)"]
     OFF --> TRAIN["IsolationForest training<br/>training/train_anomaly.py"]
     OFF --> SWEEP["contamination sweep<br/>training/ray_contamination_sweep.py<br/>Ray cluster, Kueue-admitted"]
     TRAIN --> EXP["MLflow Experiments<br/>houprod-anomaly-sweep"]
@@ -52,16 +52,16 @@ flowchart LR
   end
 ```
 
-The engineering step ([`feature_repo/ingest.py`](./feature_repo/ingest.py)) turns raw per-minute KPIs into 118 features across three feature views (`amf_kpis` 46, `smf_kpis` 34, `upf_kpis` 38): raw values plus 1-hour rolling mean/min/max plus an anomaly score and flag per NF. [`feature_repo/save_training_datasets.py`](./feature_repo/save_training_datasets.py) then persists three named SavedDatasets via point-in-time joins, so training data is a referenceable, versioned artifact instead of a loose file. Training sweeps IsolationForest contamination settings on a throwaway Ray cluster (admitted through the shared Kueue ClusterQueue), every run lands in MLflow, and the winning detector is registered as `houprod-anomaly-isolationforest`. Note the honest detail visible in the sweep logs: `f1` prints 0.000 because the sweep is unlabeled — `rate_gap` is the tuning signal.
+The engineering step ([`feature_repo/ingest.py`](./feature_repo/ingest.py)) turns raw per-minute KPIs into 118 features across three feature views (`station_kpis` 46, `job_kpis` 34, `line_kpis` 38): raw values plus 1-hour rolling mean/min/max plus an anomaly score and flag per unit. [`feature_repo/save_training_datasets.py`](./feature_repo/save_training_datasets.py) then persists three named SavedDatasets via point-in-time joins, so training data is a referenceable, versioned artifact instead of a loose file. Training sweeps IsolationForest contamination settings on a throwaway Ray cluster (admitted through the shared Kueue ClusterQueue), every run lands in MLflow, and the winning detector is registered as `houprod-anomaly-isolationforest`. Note the honest detail visible in the sweep logs: `f1` prints 0.000 because the sweep is unlabeled — `rate_gap` is the tuning signal.
 
 ### Loop 2 · Serving — use the truth
 
-Fresh network data rides the **same** harvest path — that is the entire argument for putting Feast in the middle: the online store serves the exact features the model was trained on (train/serve parity), so the agent never re-implements feature logic.
+Fresh production data rides the **same** harvest path — that is the entire argument for putting Feast in the middle: the online store serves the exact features the model was trained on (train/serve parity), so the agent never re-implements feature logic.
 
 ```mermaid
 flowchart LR
-  NET2["5G core telemetry<br/>(same harvest path)"] --> ON["Feast online store<br/>latest vector per NF<br/>feature service: moc_telemetry"]
-  subgraph POD["Agent pod (Job / noc-sweep CronJob, CPU-only)"]
+  NET2["mfg core telemetry<br/>(same harvest path)"] --> ON["Feast online store<br/>latest vector per unit<br/>feature service: moc_telemetry"]
+  subgraph POD["Agent pod (Job / moc-sweep CronJob, CPU-only)"]
     LOOP["custom tool-calling loop<br/>agent/moc_agent.py"]
     T1["get_kpi_summary"] & T2["detect_anomalies<br/>(loads registry model)"] & T3["check_alerts"] --> LOOP
     RB["runbook MCP<br/>tools/runbook_mcp.py"] --> LOOP
@@ -69,16 +69,16 @@ flowchart LR
   ON --> T1
   ON --> T2
   REG2["Model Registry<br/>houprod-anomaly-isolationforest"] --> T2
-  LOOP <--> LLM["vLLM on RHOAI (KServe)<br/>kimi-linear-48b-a3b, stateless"]
-  LOOP --> ANS["structured NOC answer<br/>cites KPIs + alerts + runbook"]
+  LOOP <--> LLM["vLLM on the AI platform (KServe)<br/>kimi-linear-48b-a3b, stateless"]
+  LOOP --> ANS["structured MOC answer<br/>cites KPIs + alerts + runbook"]
   LOOP --> TR["MLflow Traces<br/>experiment 101-moc-assistant<br/>every tool call + reasoning span"]
 ```
 
-One agent run is one Job: the pod wakes, reads the live vectors through MCP tools ([`tools/lib.py`](./tools/lib.py), served by [`tools/telemetry_mcp.py`](./tools/telemetry_mcp.py)), scores them with the registry model, reasons via the in-cluster vLLM endpoint, prints its answer, and exits — no server, no session, no state left behind. The suspended `noc-sweep` CronJob is the same image on a 15-minute schedule. **Score control lives in the traces:** every run flushes its full tool-call and reasoning trace to the `101-moc-assistant` experiment, so anomaly scores and the evidence behind every answer are queryable platform data. In 101 this is the observability surface; course 201 adds the judge that grades those traces for evidence grounding, and 302 turns judging itself into a measured suite.
+One agent run is one Job: the pod wakes, reads the live vectors through MCP tools ([`tools/lib.py`](./tools/lib.py), served by [`tools/telemetry_mcp.py`](./tools/telemetry_mcp.py)), scores them with the registry model, reasons via the in-cluster vLLM endpoint, prints its answer, and exits — no server, no session, no state left behind. The suspended `moc-sweep` CronJob is the same image on a 15-minute schedule. **Score control lives in the traces:** every run flushes its full tool-call and reasoning trace to the `101-moc-assistant` experiment, so anomaly scores and the evidence behind every answer are queryable platform data. In 101 this is the observability surface; course 201 adds the judge that grades those traces for evidence grounding, and 302 turns judging itself into a measured suite.
 
 ### Loop 3 · Resolution — act on the truth
 
-Detection without resolution is just better alarms. When the agent flags an anomaly, it consults the matching runbook ([`runbooks/`](./runbooks/): registration storm, resource exhaustion, session-management failure) and emits a structured recommendation — immediate actions first, medium-term actions second, with the affected NFs named.
+Detection without resolution is just better alarms. When the agent flags an anomaly, it consults the matching runbook ([`runbooks/`](./runbooks/): check-in storm, resource exhaustion, job-management failure) and emits a structured recommendation — immediate actions first, medium-term actions second, with the affected units named.
 
 ```mermaid
 flowchart LR
@@ -88,7 +88,7 @@ flowchart LR
   HUM -.-> A201["201: evidence-judged RCA"] -.-> A301["301: closed loop, governed actuation"]
 ```
 
-101 stops at advice **on purpose**: the agent has read-only reach, and the human stays the actuator. That is the course's ROI story — minutes of buried-signal confusion become one traced, evidenced answer, protecting MTTR and NPS — and it sets up the series arc: 201 makes the reasoning defensible, 301 lets agents act under Kuadrant-governed rails.
+101 stops at advice **on purpose**: the agent has read-only reach, and the human stays the actuator. That is the course's ROI story — minutes of buried-signal confusion become one traced, evidenced answer, protecting MTTR and OEE — and it sets up the series arc: 201 makes the reasoning defensible, 301 lets agents act under Kuadrant-governed rails.
 
 ### Stage-to-code map
 
@@ -96,12 +96,12 @@ flowchart LR
 |---|---|---|
 | Harvest | OTel exporters → Collector → Prometheus | **stand-in:** published houprod dataset in [`data/`](./data/) |
 | Feature engineering | scheduled pipeline job | `feast-bootstrap` Job → [`feature_repo/ingest.py`](./feature_repo/ingest.py) |
-| Feature store | Feast offline (parquet, PVC) + online (latest vectors) | FeatureStore CR `fivegprod`, feature service `moc_telemetry` |
-| Training | IsolationForest per NF + Ray sweep | [`training/train_anomaly.py`](./training/train_anomaly.py), [`training/ray_contamination_sweep.py`](./training/ray_contamination_sweep.py) |
+| Feature store | Feast offline (parquet, PVC) + online (latest vectors) | FeatureStore CR `mfgprod`, feature service `moc_telemetry` |
+| Training | IsolationForest per unit + Ray sweep | [`training/train_anomaly.py`](./training/train_anomaly.py), [`training/ray_contamination_sweep.py`](./training/ray_contamination_sweep.py) |
 | Tracking / registry | MLflow Experiments → Model Registry | experiments `houprod-anomaly-sweep`, registered model `houprod-anomaly-isolationforest` |
 | Serving (model) | registry model loaded as a tool | `detect_anomalies` in [`tools/lib.py`](./tools/lib.py) |
 | Serving (LLM) | stateless vLLM endpoint on KServe | `kimi-linear-48b-a3b` via the `llm-credentials` Secret |
-| Agent runtime | one run = one Job; scheduled = CronJob | [`deploy/ocp/job-ask.yaml`](./deploy/ocp/job-ask.yaml), `noc-sweep` CronJob |
+| Agent runtime | one run = one Job; scheduled = CronJob | [`deploy/ocp/job-ask.yaml`](./deploy/ocp/job-ask.yaml), `moc-sweep` CronJob |
 | Score control | traces per run, judged downstream | MLflow Traces in `101-moc-assistant` (judge arrives in course 201) |
 | Resolution | runbook-guided advisory | [`runbooks/`](./runbooks/), human executes |
 
@@ -109,9 +109,9 @@ flowchart LR
 
 Work through this list in the dashboards. Every item must be true before Step 1.
 
-1. OpenShift 4.22+ with RHOAI 3.5 EA2 installed from the **beta** channel, DataScienceCluster with dashboard, workbenches, aipipelines, kserve, modelregistry, feastoperator, ray, mlflowoperator all Managed, kueue **Unmanaged** (RHBOK operator installed instead). Full install narrative: `shared/manifests/rome/install-report.md`.
+1. OpenShift 4.22+ with the AI platform 3.5 EA2 installed from the **beta** channel, DataScienceCluster with dashboard, workbenches, aipipelines, kserve, modelregistry, feastoperator, ray, mlflowoperator all Managed, kueue **Unmanaged** (RHBOK operator installed instead). Full install narrative: `shared/manifests/rome/install-report.md`.
 2. The internal image registry is configured. Check: Console, Administration, Cluster Settings, `configs.imageregistry` shows `managementState: Managed` with a storage PVC. If it shows `Removed`, builds will sit in `New` forever. Fix (admin): create a 100Gi PVC named `image-registry-storage` in `openshift-image-registry` on your default StorageClass, then set the config to Managed, replicas 1, rolloutStrategy Recreate, storage `pvc: {claim: image-registry-storage}`.
-3. Kimi-Linear is served and Ready: RHOAI dashboard, AI hub, Models, Deployments shows `kimi-linear-48b-a3b` in project `telco-aix`. If not, deploy `shared/manifests/rome/vllm-kimi-linear.yaml` first (see its header; on a single 96G GPU use `--tensor-parallel-size=1 --max-num-seqs=64`, and on Blackwell nodes add `NCCL_P2P_DISABLE=1` and `--disable-custom-all-reduce` plus an 8Gi `/dev/shm` volume).
+3. Kimi-Linear is served and Ready: AI platform dashboard, AI hub, Models, Deployments shows `kimi-linear-48b-a3b` in project `telco-aix`. If not, deploy `shared/manifests/rome/vllm-kimi-linear.yaml` first (see its header; on a single 96G GPU use `--tensor-parallel-size=1 --max-num-seqs=64`, and on Blackwell nodes add `NCCL_P2P_DISABLE=1` and `--disable-custom-all-reduce` plus an 8Gi `/dev/shm` volume).
 4. Managed MLflow is running: Console, project `redhat-ods-applications`, Deployment `mlflow` is Ready.
 5. Kueue cluster objects exist: ResourceFlavors `default-flavor` and `nvidia-gpu-flavor`, ClusterQueue `default`, and the Kueue cluster CR frameworks list is exactly `["BatchJob","PyTorchJob","RayCluster","RayJob","TrainJob"]`. Never add Deployment/Pod/StatefulSet to that list; the webhook then breaks operator-owned Deployments.
 
@@ -119,7 +119,7 @@ You also need a checkout of this repo and either console access (kubeadmin or eq
 
 ## Step 1: Create the project
 
-**Why:** the namespace is the agent's blast-radius boundary. Everything the course creates (identity, secrets, workloads, the feature store) lives inside it, so quota, RBAC, and cleanup all have one scope. The labels are not decoration: `kueue.openshift.io/managed` opts the namespace into Kueue admission (RHBOK only watches namespaces that ask), `opendatahub.io/dashboard` makes it a workspace the RHOAI dashboard (and its MLflow) recognizes, and `opendatahub.io/feast` lets the feast operator work here.
+**Why:** the namespace is the agent's blast-radius boundary. Everything the course creates (identity, secrets, workloads, the feature store) lives inside it, so quota, RBAC, and cleanup all have one scope. The labels are not decoration: `kueue.openshift.io/managed` opts the namespace into Kueue admission (RHBOK only watches namespaces that ask), `opendatahub.io/dashboard` makes it a workspace the AI platform dashboard (and its MLflow) recognizes, and `opendatahub.io/feast` lets the feast operator work here.
 
 **Do (Console):** Administration, Namespaces, Create Namespace: name `agent-school`, labels:
 
@@ -131,7 +131,7 @@ opendatahub.io/feast=true
 
 `oc` fallback: `oc new-project agent-school && oc label ns agent-school kueue.openshift.io/managed=true opendatahub.io/dashboard=true opendatahub.io/feast=true`
 
-**Expect:** the project appears in the RHOAI dashboard project list.
+**Expect:** the project appears in the AI platform dashboard project list.
 
 ## Step 2: Wiring secrets and config
 
@@ -166,7 +166,7 @@ metadata:
   name: feature-store-client
   namespace: agent-school
 data:
-  FEAST_ONLINE_URL: https://feast-fivegprod-online.agent-school.svc.cluster.local:443
+  FEAST_ONLINE_URL: https://feast-mfgprod-online.agent-school.svc.cluster.local:443
 ```
 
 Note the predictor Service is headless, so the port `:8080` in the URL is mandatory.
@@ -175,29 +175,29 @@ Note the predictor Service is headless, so the port `:8080` in the URL is mandat
 
 ## Step 3: Base workload (build + agent identity)
 
-**Why:** three objects, three lessons. The **ServiceAccount** is the agent's identity: the agent never runs as `default`, because identity is the hook every governance mechanism (MLflow workspace auth, NetworkPolicies, audit) keys off. The **ImageStream/BuildConfig** turn the course source into a container the OpenShift-native way: the cluster clones the public repo and builds the Containerfile itself, so no student laptop needs Docker. The **CronJob** shows the "continuous agent without a product harness" pattern: a NOC sweep every 15 minutes is just a schedule on the same image. It ships suspended so applying it costs no tokens until you decide otherwise.
+**Why:** three objects, three lessons. The **ServiceAccount** is the agent's identity: the agent never runs as `default`, because identity is the hook every governance mechanism (MLflow workspace auth, NetworkPolicies, audit) keys off. The **ImageStream/BuildConfig** turn the course source into a container the OpenShift-native way: the cluster clones the repo (with the `github-source` secret, since the repo is private) and builds the Containerfile itself, so no student laptop needs Docker. The **CronJob** shows the "continuous agent without a product harness" pattern: a MOC sweep every 15 minutes is just a schedule on the same image. It ships suspended so applying it costs no tokens until you decide otherwise.
 
-**Do (Console):** Import YAML, paste the contents of these three files from `101-moc-assistant/deploy/ocp/base/`, in order: `serviceaccount.yaml`, `imagestream-buildconfig.yaml`, `cronjob-noc-sweep.yaml`. Add `namespace: agent-school` under each `metadata:` if you paste them raw.
+**Do (Console):** Import YAML, paste the contents of these three files from `101-moc-assistant/deploy/ocp/base/`, in order: `serviceaccount.yaml`, `imagestream-buildconfig.yaml`, `cronjob-moc-sweep.yaml`. Add `namespace: agent-school` under each `metadata:` if you paste them raw.
 
 `oc` fallback (this also generates Step 2's objects): `oc apply -k 101-moc-assistant/deploy/ocp/rome`
 
-Then start the build. **Console:** Builds, BuildConfigs, `noc-assistant`, Actions, Start build. Watch the log; it clones `github.com/lakurella-svg/mfg-agent-school` and builds `deploy/Containerfile`.
+Create the `github-source` secret once (the two commands are in the header of `imagestream-buildconfig.yaml`), then start the build. **Console:** Builds, BuildConfigs, `moc-assistant`, Actions, Start build. Watch the log; it clones `github.com/lakurella-svg/mfg-agent-school` and builds `deploy/Containerfile`.
 
-**Expect:** Build `noc-assistant-1` reaches **Complete** (2 to 5 minutes). The CronJob `noc-sweep` exists but is **suspended**; leave it that way for now.
+**Expect:** Build `moc-assistant-1` reaches **Complete** (2 to 5 minutes). The CronJob `moc-sweep` exists but is **suspended**; leave it that way for now.
 
 ## Step 4: RBAC, queue, and the feature store
 
 **Why:** this step grants and declares, it runs nothing. The two RBAC files let the agent's identity (and, for Ray later, the whole SA group of the namespace) pass MLflow's workspace SubjectAccessReview; without them tracking calls are denied, which is the platform proving that experiment data is governed by the same RBAC as everything else. The **LocalQueue** connects this namespace to the shared ClusterQueue so batch work here is admitted, counted, and visible in Workload metrics. The **FeatureStore CR** asks the feast operator to stand up a real feature-store service (online store + registry, each on its own PVC): the agent will not read files, it will query a service, which is what separates "demo with CSVs" from "platform with a data layer".
 
-**Do (Console):** Import YAML, paste from `101-moc-assistant/deploy/ocp/rome/`: `mlflow-rbac.yaml`, `mlflow-workspace-rbac.yaml`, `kueue.yaml`, `featurestore-fivegprod.yaml` (add `namespace: agent-school` where missing).
+**Do (Console):** Import YAML, paste from `101-moc-assistant/deploy/ocp/rome/`: `mlflow-rbac.yaml`, `mlflow-workspace-rbac.yaml`, `kueue.yaml`, `featurestore-mfgprod.yaml` (add `namespace: agent-school` where missing).
 
-**Expect:** within about a minute a pod `feast-fivegprod-...` is Running 1/1 in the project and two PVCs (`feast-fivegprod-registry`, `feast-fivegprod-online`) are Bound. The RHOAI dashboard Feature store page lists `fivegprod`.
+**Expect:** within about a minute a pod `feast-mfgprod-...` is Running 1/1 in the project and two PVCs (`feast-mfgprod-registry`, `feast-mfgprod-online`) are Bound. The AI platform dashboard Feature store page lists `mfgprod`.
 
 EA note: on newer EA builds the feast CRD silently drops the `runFeastApplyOnInit` and `ui` spec keys. Ignore the pruning; the store still works because the next step applies feature definitions itself.
 
 ## Step 5: Load the feature store
 
-**Why:** an empty feature store teaches nothing. This step runs the course's real data pipeline as one Job: engineer offline parquet from the published 5G core telemetry, `feast apply` the feature definitions (schema inference needs the parquet first, hence the order inside the Job), then push the latest feature vectors to the online store. After it, the store holds both halves that matter: **offline** point-in-time data for training without leakage, and **online** low-latency vectors for the agent's live reads. The second Job persists named SavedDatasets, which is how training data becomes a referenceable, versioned artifact instead of a loose file. The Jobs mount the store's PVCs directly because the EA registry server does not persist remote `feast apply`, a real-world workaround worth knowing.
+**Why:** an empty feature store teaches nothing. This step runs the course's real data pipeline as one Job: engineer offline parquet from the published mfg core telemetry, `feast apply` the feature definitions (schema inference needs the parquet first, hence the order inside the Job), then push the latest feature vectors to the online store. After it, the store holds both halves that matter: **offline** point-in-time data for training without leakage, and **online** low-latency vectors for the agent's live reads. The second Job persists named SavedDatasets, which is how training data becomes a referenceable, versioned artifact instead of a loose file. The Jobs mount the store's PVCs directly because the EA registry server does not persist remote `feast apply`, a real-world workaround worth knowing.
 
 **Do:** create the source ConfigMaps from a repo checkout:
 
@@ -222,11 +222,11 @@ oc create configmap feast-saveds-src -n agent-school \
 
 **Do (Console):** Import YAML, paste `101-moc-assistant/deploy/ocp/job-ask.yaml` and add `namespace: agent-school`. (It uses `generateName`, so the console will accept it once; to re-run, paste it again. With a terminal: `oc create -f 101-moc-assistant/deploy/ocp/job-ask.yaml`.)
 
-**Expect:** the `noc-ask-...` pod completes in about a minute. Read its log: a structured NOC answer that cites live KPI and alert data. Then open RHOAI dashboard, Experiments: the agent's episode is flushed to the `101-moc-assistant` experiment as an MLflow **trace** (Traces tab), not a run — the runs list stays empty, and that is expected. In the replay portal you see the experiment card; browse the trace itself on a live cluster.
+**Expect:** the `moc-ask-...` pod completes in about a minute. Read its log: a structured MOC answer that cites live KPI and alert data. Then open the AI platform dashboard, Experiments: the agent's episode is flushed to the `101-moc-assistant` experiment as an MLflow **trace** (Traces tab), not a run — the runs list stays empty, and that is expected. In the replay portal you see the experiment card; browse the trace itself on a live cluster.
 
 ## Step 7: The distributed sweep (Ray + Kueue)
 
-**Why:** classic ML work belongs on the same platform as the agent, under the same governance. The RayJob demonstrates two capabilities at once: **Ray** (via RHOAI's KubeRay) spins up a head+worker cluster that exists only for the sweep's lifetime and runs a 9-way contamination sweep for the anomaly model, and **Kueue** admits the whole thing through the queue you created in Step 4, so it shows up in Workload metrics like any governed batch workload. The sweep's results land in MLflow, closing the loop: the model the agent's `detect_anomalies` tool relies on was tuned, tracked, and admitted on-platform. The known EA quirk (KubeRay swaps the pod SA for a generated oauth-proxy SA) is why Step 4's group-level RBAC exists.
+**Why:** classic ML work belongs on the same platform as the agent, under the same governance. The RayJob demonstrates two capabilities at once: **Ray** (via the AI platform's KubeRay) spins up a head+worker cluster that exists only for the sweep's lifetime and runs a 9-way contamination sweep for the anomaly model, and **Kueue** admits the whole thing through the queue you created in Step 4, so it shows up in Workload metrics like any governed batch workload. The sweep's results land in MLflow, closing the loop: the model the agent's `detect_anomalies` tool relies on was tuned, tracked, and admitted on-platform. The known EA quirk (KubeRay swaps the pod SA for a generated oauth-proxy SA) is why Step 4's group-level RBAC exists.
 
 **Do:**
 
@@ -250,4 +250,4 @@ Optionally register the trained detector in the model registry: AI hub, Models, 
 
 ## Cleanup
 
-Delete the Jobs and RayJob (or wait for their TTLs). Suspend stays on for `noc-sweep` unless you enabled it. Deleting the project removes everything, including the Feast PVCs.
+Delete the Jobs and RayJob (or wait for their TTLs). Suspend stays on for `moc-sweep` unless you enabled it. Deleting the project removes everything, including the Feast PVCs.

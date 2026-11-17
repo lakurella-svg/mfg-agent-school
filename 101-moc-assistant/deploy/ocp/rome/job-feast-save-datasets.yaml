@@ -23,9 +23,9 @@ spec:
         - name: src
           configMap: {name: feast-saveds-src}
         - name: reg
-          persistentVolumeClaim: {claimName: feast-fivegprod-registry}
+          persistentVolumeClaim: {claimName: feast-mfgprod-registry}
         - name: onl
-          persistentVolumeClaim: {claimName: feast-fivegprod-online}
+          persistentVolumeClaim: {claimName: feast-mfgprod-online}
       containers:
         - name: feast
           image: registry.access.redhat.com/ubi9/python-311:latest

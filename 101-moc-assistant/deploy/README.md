@@ -1,9 +1,9 @@
 # 101 · OpenShift Deployment
 
 The agent is a batch workload: one question, one Job, one exit code. The
-CronJob variant gives you the continuous NOC sweep without a product
+CronJob variant gives you the continuous MOC sweep without a product
 harness. CPU-only, restricted-PSS compliant, model served elsewhere
-(RHOAI MaaS or vLLM) per the blueprint.
+(AI platform MaaS or vLLM) per the blueprint.
 
 Not on OpenShift? The same workloads for plain Kubernetes are in
 [`k8s/`](k8s/README.md).
@@ -27,18 +27,18 @@ In-cluster, from your git fork (edit the `uri` in
 
 ```bash
 oc apply -k ocp/base
-oc start-build noc-assistant --follow      # or binary build:
-# oc start-build noc-assistant --from-dir=.. --follow
+oc start-build moc-assistant --follow      # or binary build:
+# oc start-build moc-assistant --from-dir=.. --follow
 ```
 
 Or locally with podman, pushing to the internal registry:
 
 ```bash
 cd 101-moc-assistant
-podman build -f deploy/Containerfile -t noc-assistant:latest .
-podman tag noc-assistant:latest \
-  default-route-openshift-image-registry.<cluster-domain>/agent-school/noc-assistant:latest
-podman push default-route-openshift-image-registry.<cluster-domain>/agent-school/noc-assistant:latest
+podman build -f deploy/Containerfile -t moc-assistant:latest .
+podman tag moc-assistant:latest \
+  default-route-openshift-image-registry.<cluster-domain>/agent-school/moc-assistant:latest
+podman push default-route-openshift-image-registry.<cluster-domain>/agent-school/moc-assistant:latest
 ```
 
 ## 3. Run
@@ -53,7 +53,7 @@ oc logs -f job/$(oc get jobs -o name --sort-by=.metadata.creationTimestamp | tai
 Continuous sweep (applied suspended so it costs nothing until you enable it):
 
 ```bash
-oc patch cronjob noc-sweep -p '{"spec":{"suspend":false}}'
+oc patch cronjob moc-sweep -p '{"spec":{"suspend":false}}'
 ```
 
 ## Notes
@@ -65,31 +65,31 @@ oc patch cronjob noc-sweep -p '{"spec":{"suspend":false}}'
   tolerates OpenShift's random UID.
 - Set `LLM_WIRE_LOG=/tmp/wire.jsonl` in the Job env to capture wire-level
   QA evidence from in-cluster runs.
-- The agent runs under its own ServiceAccount (`noc-assistant`, in
+- The agent runs under its own ServiceAccount (`moc-assistant`, in
   `ocp/base/serviceaccount.yaml`) — agent identity is plain Kubernetes
   identity, which is what RBAC-scoped platform services (like workspace
   MLflow, below) and NetworkPolicies hang off.
 
 ## Rome sandbox (verified in-cluster)
 
-Deployed and run on the curriculum's Option-E reference platform (RHOAI 3.5
+Deployed and run on the curriculum's Option-E reference platform (AI platform 3.5
 EA2 SNO; see `shared/manifests/vllm-rhoai.md`). The `ocp/rome/` overlay
 generates `llm-credentials` pointing at the in-cluster Kimi-Linear endpoint,
 so no laptop credentials are needed:
 
 ```bash
 oc apply -k deploy/ocp/rome        # base + Secret + mlflow-tracking ConfigMap + RBAC
-oc start-build noc-assistant --follow
+oc start-build moc-assistant --follow
 oc create -f deploy/ocp/job-ask.yaml
 ```
 
-### Experiments tracking (RHOAI MLflow)
+### Experiments tracking (AI platform MLflow)
 
 The rome overlay also generates a `mlflow-tracking` ConfigMap
 (`MLFLOW_TRACKING_URI` + `MLFLOW_WORKSPACE`), which the Job/CronJob import
 as optional env — so on Rome every agent run automatically lands in the
-RHOAI dashboard under **Experiments → 101-moc-assistant**, with full
-LLM-call traces from `mlflow.openai.autolog()`. RHOAI's managed MLflow is
+The AI platform dashboard under **Experiments → 101-moc-assistant**, with full
+LLM-call traces from `mlflow.openai.autolog()`. The AI platform's managed MLflow is
 workspace-scoped: `agent/_enable_mlflow()` adds the `X-MLFLOW-WORKSPACE`
 header and authenticates with the pod's ServiceAccount token;
 `ocp/rome/mlflow-rbac.yaml` grants that ServiceAccount the workspace RBAC

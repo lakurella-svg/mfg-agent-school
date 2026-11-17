@@ -1,6 +1,6 @@
 # Harness track: OpenClaw
 
-Run the same NOC Assistant on [OpenClaw](https://github.com/openclaw/openclaw),
+Run the same MOC Assistant on [OpenClaw](https://github.com/openclaw/openclaw),
 the always-on personal agent harness. No agent code is written here; that is
 the lesson. The skills you already have as MCP servers plug into OpenClaw's
 config, and its own loop takes over what `agent/moc_agent.py` demonstrated.
@@ -11,7 +11,7 @@ Config lives at `~/.openclaw/openclaw.json` (JSON5).
 
 ## 1. Point OpenClaw at your model endpoint
 
-vLLM on RHOAI (or any OpenAI-compatible endpoint) is a custom provider with
+vLLM on the AI platform (or any OpenAI-compatible endpoint) is a custom provider with
 `api: "openai-completions"`:
 
 ```json5
@@ -21,10 +21,10 @@ vLLM on RHOAI (or any OpenAI-compatible endpoint) is a custom provider with
     providers: {
       rhoai: {
         baseUrl: "https://<your-inference-route>/v1",
-        apiKey: "${RHOAI_API_KEY}",
+        apiKey: "${AI_PLATFORM_API_KEY}",
         api: "openai-completions",
         models: [
-          { id: "<deployed-model-name>", name: "RHOAI model",
+          { id: "<deployed-model-name>", name: "AI platform model",
             contextWindow: 128000, maxTokens: 8192 },
         ],
       },
@@ -36,7 +36,7 @@ vLLM on RHOAI (or any OpenAI-compatible endpoint) is a custom provider with
 }
 ```
 
-## 2. Register the NOC skills as MCP servers
+## 2. Register the MOC skills as MCP servers
 
 ```json5
 {
@@ -61,7 +61,7 @@ OpenClaw exposes these as plugin-owned tools (`moc-telemetry__get_kpi_summary`,
 ## 3. If you run OpenClaw sandboxed, allow the MCP tools through
 
 Sandboxed sessions filter tools with an extra gate. Add `bundle-mcp` to the
-sandbox allowlist so the NOC tools stay visible:
+sandbox allowlist so the MOC tools stay visible:
 
 ```json5
 {
@@ -79,12 +79,12 @@ Run `openclaw doctor` to verify the shape.
 
 Restart the gateway and ask through any connected channel or the TUI:
 
-> What is wrong in the 5G core right now?
+> What is wrong in the mfg core right now?
 
 OpenClaw's loop calls the same Isolation Forest, alert feed, and runbook
 tools over the same real houprod data, then answers.
 
-## 5. Continuous operation (7/24 NOC watch)
+## 5. Continuous operation (7/24 MOC watch)
 
 The custom teaching loop is request-driven. OpenClaw's
 [heartbeat](https://docs.openclaw.ai/gateway/heartbeat) turns the same setup
@@ -92,7 +92,7 @@ into an always-on monitor: it runs a periodic agent turn, and the agent
 replies `HEARTBEAT_OK` when nothing needs attention or sends an alert when
 something does. Omitting `activeHours` means 24/7 (the default).
 
-Because the NOC tools re-read `data/*.csv` and `alerts.json` on every call,
+Because the MOC tools re-read `data/*.csv` and `alerts.json` on every call,
 fresh data dropped into the folder is picked up on the next heartbeat tick
 automatically; no restart, no re-index. (In production you would swap the
 file-backed tools for a live telemetry source; the heartbeat side does not
@@ -107,7 +107,7 @@ change.)
         target: "last",          // or an explicit channel, e.g. "telegram"
         isolatedSession: true,   // fresh session per tick: cheap, and 12-Factor clean
         lightContext: true,      // only HEARTBEAT.md from workspace bootstrap
-        prompt: "Run moc-telemetry__get_active_alerts and moc-telemetry__detect_anomalies. If there is a CRITICAL alert or a new anomaly cluster, send a short NOC alert naming the NF, the deviating KPIs, and the matching runbook. Otherwise reply HEARTBEAT_OK.",
+        prompt: "Run moc-telemetry__get_active_alerts and moc-telemetry__detect_anomalies. If there is a CRITICAL alert or a new anomaly cluster, send a short MOC alert naming the NF, the deviating KPIs, and the matching runbook. Otherwise reply HEARTBEAT_OK.",
       },
     },
   },
@@ -122,7 +122,7 @@ tasks:
 
 - name: anomaly-watch
   interval: 15m
-  prompt: "Run detect_anomalies on all NFs; alert if a new anomaly cluster appears."
+  prompt: "Run detect_anomalies on all units; alert if a new anomaly cluster appears."
 - name: alert-feed-scan
   interval: 5m
   prompt: "Check get_active_alerts; alert on any new CRITICAL entry."

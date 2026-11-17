@@ -39,7 +39,7 @@ flowchart LR
 
 ### Loop 2 · Investigation — two phases, every claim cited
 
-One investigation is one Job. **Phase 1** is a bounded tool-calling loop ([`agent/rca_agent.py`](./agent/rca_agent.py), capped by `RCA_MAX_TURNS`, because unbounded agent loops are a cost and safety bug): the agent reaches its skill at `http://rca-rag:8201` through plain in-cluster service discovery and gathers correlated evidence. **Phase 2** writes the RCA report, and every finding must cite evidence ids like `[alert-5]` and `[amf-796]` — uncited claims are exactly what the judge exists to catch. The report lands in `REPORT_DIR` (an emptyDir by default; mount a PVC to keep it), and both phases are flushed to the `201-rca-investigator` experiment as MLflow traces, so the report's provenance is inspectable turn by turn.
+One investigation is one Job. **Phase 1** is a bounded tool-calling loop ([`agent/rca_agent.py`](./agent/rca_agent.py), capped by `RCA_MAX_TURNS`, because unbounded agent loops are a cost and safety bug): the agent reaches its skill at `http://rca-rag:8201` through plain in-cluster service discovery and gathers correlated evidence. **Phase 2** writes the RCA report, and every finding must cite evidence ids like `[alert-5]` and `[station-796]` — uncited claims are exactly what the judge exists to catch. The report lands in `REPORT_DIR` (an emptyDir by default; mount a PVC to keep it), and both phases are flushed to the `201-rca-investigator` experiment as MLflow traces, so the report's provenance is inspectable turn by turn.
 
 ```mermaid
 flowchart LR
@@ -93,7 +93,7 @@ Confident prose is worthless if it is not grounded, and no human reads every RCA
 
 **Do (Console):** Import YAML, paste `201-rca-investigator/deploy/ocp/job-rca.yaml`, add `namespace: agent-school`. (Uses `generateName`; with a terminal: `oc create -f 201-rca-investigator/deploy/ocp/job-rca.yaml`.)
 
-**Expect:** the `rca-run-...` pod completes in 2 to 4 minutes. Its log shows the tool-calling investigation followed by a written RCA whose findings cite evidence ids like `[alert-5]` and `[amf-796]`. Both phases are flushed to the `201-rca-investigator` experiment as MLflow **traces** (Traces tab), not runs — the runs list stays empty, and that is expected. In the replay portal you see the experiment card; browse the traces themselves on a live cluster.
+**Expect:** the `rca-run-...` pod completes in 2 to 4 minutes. Its log shows the tool-calling investigation followed by a written RCA whose findings cite evidence ids like `[alert-5]` and `[station-796]`. Both phases are flushed to the `201-rca-investigator` experiment as MLflow **traces** (Traces tab), not runs — the runs list stays empty, and that is expected. In the replay portal you see the experiment card; browse the traces themselves on a live cluster.
 
 The report also lands in `REPORT_DIR` (an emptyDir by default; mount a PVC in the Job if you want reports to outlive the pod).
 

@@ -11,8 +11,7 @@ elsewhere (any OpenAI-compatible endpoint).
 | ImageStream + BuildConfig            | local `docker build`, or `build-job.yaml` (Kaniko)  |
 | internal registry image reference    | `images:` in `base/kustomization.yaml`              |
 | random UID injected by the platform  | `runAsUser: 1001` (the UBI image's non-root user)   |
-| `rome/` overlay (Feast, MLflow, Kueue) | not ported: OpenShift AI services                 |
-| `noc-assistant` / `noc-sweep` names (match the recorded cluster) | `moc-assistant` / `moc-sweep` |
+| `rome/` overlay (Feast, MLflow, Kueue) | not ported: AI platform services                 |
 
 ## 1. Namespace, identity, credentials
 

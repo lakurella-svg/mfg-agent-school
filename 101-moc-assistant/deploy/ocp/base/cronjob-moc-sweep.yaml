@@ -1,12 +1,12 @@
-# Continuous NOC sweep without a product harness: a CronJob runs the agent
+# Continuous MOC sweep without a product harness: a CronJob runs the agent
 # on a cadence. Ships suspended so applying it does not burn tokens;
-# enable with: oc patch cronjob noc-sweep -p '{"spec":{"suspend":false}}'
+# enable with: oc patch cronjob moc-sweep -p '{"spec":{"suspend":false}}'
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: noc-sweep
+  name: moc-sweep
   labels:
-    app.kubernetes.io/name: noc-assistant
+    app.kubernetes.io/name: moc-assistant
     app.kubernetes.io/part-of: agent-school
 spec:
   schedule: "*/15 * * * *"
@@ -21,20 +21,20 @@ spec:
       template:
         metadata:
           labels:
-            app.kubernetes.io/name: noc-assistant
+            app.kubernetes.io/name: moc-assistant
         spec:
           restartPolicy: Never
-          serviceAccountName: noc-assistant
+          serviceAccountName: moc-assistant
           securityContext:
             runAsNonRoot: true
             seccompProfile:
               type: RuntimeDefault
           containers:
             - name: agent
-              image: image-registry.openshift-image-registry.svc:5000/agent-school/noc-assistant:latest
+              image: image-registry.openshift-image-registry.svc:5000/agent-school/moc-assistant:latest
               env:
                 - name: QUESTION
-                  value: "Sweep the core: check alerts and anomalies; report only items needing NOC attention, else say ALL-CLEAR."
+                  value: "Sweep the core: check alerts and anomalies; report only items needing MOC attention, else say ALL-CLEAR."
               envFrom:
                 - secretRef:
                     name: llm-credentials

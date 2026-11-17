@@ -5,9 +5,9 @@
 > Qwen3.6-35B-A3B) all pass. Full evidence, including wire-level MaaS
 > request/response captures, lives in [QA/](./QA/).
 
-A single agent that answers MOC questions about a mfg core: it inspects telemetry, detects anomalies, and consults runbooks before answering. The "hello world" of agentic telco AI, except it already does real work.
+A single agent that answers MOC questions about a mfg core: it inspects telemetry, detects anomalies, and consults runbooks before answering. The "hello world" of agentic manufacturing AI, except it already does real work.
 
-**Source experiments:** [houprod](https://github.com/open-experiments/Telco-AIX/tree/main/5gprod) (telemetry + MOC workflow), [telco-sme](https://github.com/open-experiments/Telco-AIX/tree/main/telco-sme) (domain knowledge access).
+**Source experiments:** [houprod](https://github.com/open-experiments/Telco-AIX/tree/main/houprod) (telemetry + MOC workflow), [telco-sme](https://github.com/open-experiments/Telco-AIX/tree/main/telco-sme) (domain knowledge access).
 
 ## What it teaches
 
@@ -38,7 +38,7 @@ whole blueprint turns on:
   This is Agent-as-a-Workload: the pod is disposable, everything stateful
   lives behind a service.
 - **Inside the cluster** the pod consumes platform services it does not
-  carry: the Feast online store for live network state (⑤), vLLM for
+  carry: the Feast online store for live production state (⑤), vLLM for
   reasoning (⑥), MLflow for traces (⑦). The feature pipeline Jobs in the
   same zone keep those services truthful (①–④).
 - **Outside the cluster** sit the published dataset the pipeline pulls
@@ -56,21 +56,21 @@ from the Rome cluster, not mockups.
 **1 — Timeseries features in Feast.** `feature_repo/ingest.py` pulls
 [lakurella/mfgcore-prod](https://huggingface.co/datasets/lakurella/mfgcore-prod),
 engineers 1-hour rolling mean/min/max per KPI, lands the offline parquet,
-and pushes the latest vector per NF online. One feature view per NF, one
+and pushes the latest vector per unit online. One feature view per unit, one
 `moc_telemetry` feature service:
 
 ![Feature views on the AI platform](./images/rhoai/feature-views.png)
 
 **2 — Training as an experiment.** `training/train_anomaly.py` retrieves
 the same features point-in-time from the offline store (no
-training/serving skew by construction), trains an IsolationForest per NF,
+training/serving skew by construction), trains an IsolationForest per unit,
 and validates against the labeled alert windows in `data/alerts.json`:
 
 ![Training runs](./images/rhoai/experiments-runs.png)
 
 **2b — The training set is a named artifact.** `feature_repo/save_training_datasets.py`
 freezes that exact point-in-time retrieval as Feast SavedDatasets
-(`amf/smf/upf_anomaly_training`, tagged with course + consumer model) —
+(`station/job/line_anomaly_training`, tagged with course + consumer model) —
 **Feature store → Datasets** in the dashboard. A model version points
 back to a named dataset, not an ephemeral dataframe:
 
@@ -79,11 +79,11 @@ back to a named dataset, not an ephemeral dataframe:
 **2c — Calibration as a queued, distributed sweep.** Training itself
 stays a plain Job — an IsolationForest does not need a Ray cluster. What
 *is* embarrassingly parallel is calibrating it:
-`training/ray_contamination_sweep.py` fans nine configurations (3 NFs ×
+`training/ray_contamination_sweep.py` fans nine configurations (3 units ×
 3 contamination values) across an ephemeral Ray cluster (head + worker,
 alive only for the job), scores each against the labeled alert windows
 and the labeled incident rate, and logs the sweep to MLflow
-(`houprod-anomaly-sweep`, with the best pick per NF). The RayJob carries
+(`houprod-anomaly-sweep`, with the best pick per unit). The RayJob carries
 the `kueue.x-k8s.io/queue-name` label, so RHBOK admits it against the
 shared ClusterQueue before KubeRay spins up a single pod — the same
 quota gate the Feast dataset Job goes through, visible in
@@ -99,7 +99,7 @@ KubeRay's silent `oauth-proxy-sa` swap) are in
 `rayjob-anomaly-sweep.yaml`, `mlflow-workspace-rbac.yaml`.
 
 **3 — A versioned model, not a pickle in a bucket.** The run logs one
-pyfunc model that routes each row to its NF's forest, and registers it as
+pyfunc model that routes each row to its unit's forest, and registers it as
 `houprod-anomaly-isolationforest`. Lineage — dataset, feature source,
 window, split — is all in the params:
 
@@ -140,7 +140,7 @@ pattern, dashboard labels) are in
 | Model | your endpoint via `LLM_BASE_URL` (vLLM / AI platform MaaS) |
 | Skills (thin clients) | `tools/lib.py` functions (Feast online client or CSVs, alert feed, runbooks) |
 | Skill exposure | `tools/telemetry_mcp.py`, `tools/runbook_mcp.py` (MCP servers) |
-| Feature store | Feast `fivegprod` (`feature_repo/`) — offline training set + online serving |
+| Feature store | Feast `mfgprod` (`feature_repo/`) — offline training set + online serving |
 | Model lifecycle | MLflow Experiments → logged model → registered versions (`training/`) |
 | Observability | stdout trace + MLflow traces (agent loop and pipeline inference) |
 
@@ -170,13 +170,15 @@ python tools/runbook_mcp.py
 
 ## Data
 
-`data/` carries the real Telco-AIX houprod dataset: 24 hours of per-minute
-KPIs for AMF (registration, NAS/NGAP success, N1/N2 messaging), SMF
-(session establishment, PFCP/N4 messaging, policy installation) and UPF
-(packet processing, tunnels, throughput, drops, latency), plus a structured
-alert feed with REGISTRATION_STORM, RESOURCE_EXHAUSTION and
-SESSION_MANAGEMENT_FAILURE incidents and their before/during KPI deltas.
-Source: [Telco-AIX/houprod](https://github.com/open-experiments/Telco-AIX/tree/main/5gprod),
+`data/` carries the houprod manufacturing dataset (derived from Telco-AIX):
+24 hours of per-minute KPIs for the **station** layer (check-ins,
+authentication and control-handshake success, MES messaging), the **job**
+layer (job release and change, recipe apply, program download, line
+commands) and the **line** layer (units processed, lot starts, conveyor fill,
+spec compliance, throughput, scrap, cycle time), plus a structured alert feed
+with CHECKIN_STORM, RESOURCE_EXHAUSTION and JOB_MANAGEMENT_FAILURE incidents
+and their before/during KPI deltas.
+Source: [Telco-AIX/houprod](https://github.com/open-experiments/Telco-AIX/tree/main/houprod),
 published at [huggingface.co/datasets/lakurella/mfgcore-prod](https://huggingface.co/datasets/lakurella/mfgcore-prod).
 The runbooks in `runbooks/` are written against those three real alert types.
 
@@ -215,7 +217,7 @@ is the point.
 
 **Complete, QA-passed, live on Rome.** The full develop-and-train
 lifecycle runs on the cluster: the feature pipeline lands offline
-history and pushes per-NF verdicts to the Feast online store on a
+history and pushes per-unit verdicts to the Feast online store on a
 CronJob cadence; the IsolationForest detector is trained, versioned in
 workspace MLflow (`houprod-anomaly`), and calibrated by a RayJob sweep
 admitted through Kueue; and the agent's tool-calling loop is traced

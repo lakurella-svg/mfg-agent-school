@@ -92,19 +92,23 @@ FEAST_CA = os.environ.get(
 # KPI columns per NF, from the published mfgcore-prod dataset (the same
 # headers 101's pipeline materializes as 1h aggregates).
 NF_KPIS = {
-    "amf": ["capacity_utilization_pct", "buffer_occupancy_pct", "registration_rate",
+    "amf": ["capacity_utilization_pct", "buffer_occupancy_pct", "station_checkin_rate",
             "station_checkin_success_rate", "job_setup_success_rate"],
     "smf": ["capacity_utilization_pct", "buffer_occupancy_pct",
             "job_release_rate", "job_completion_success_rate"],
     "upf": ["capacity_utilization_pct", "buffer_occupancy_pct", "scrap_rate",
             "cycle_time", "line_throughput"],
 }
+# 101's feature store names its production units station / job / line
+# (entity `unit`); this loop keeps its own amf / smf / upf vocabulary
+# (actions, playbooks, risk model), so translate at the lookup.
+UNIT = {"amf": "station", "smf": "job", "upf": "line"}
 
 
 def feast_online(nf, refs):
     ctx = ssl.create_default_context(
         cafile=FEAST_CA if Path(FEAST_CA).exists() else None)
-    body = json.dumps({"features": refs, "entities": {"nf": [nf]}}).encode()
+    body = json.dumps({"features": refs, "entities": {"unit": [UNIT[nf]]}}).encode()
     req = urllib.request.Request(
         FEAST_URL + "/get-online-features", data=body,
         headers={"Content-Type": "application/json"})
@@ -112,7 +116,7 @@ def feast_online(nf, refs):
         payload = json.loads(resp.read())
     names = payload["metadata"]["feature_names"]
     values = [r["values"][0] for r in payload["results"]]
-    return {n: v for n, v in zip(names, values) if n != "nf"}
+    return {n: v for n, v in zip(names, values) if n != "unit"}
 
 
 # ----------------------------------------------------------------- state
@@ -144,8 +148,9 @@ class LoopState(TypedDict, total=False):
 def sense(state: LoopState) -> LoopState:
     tel = {}
     for nf, kpis in NF_KPIS.items():
-        refs = [nf + "_kpis:anomaly_score", nf + "_kpis:anomaly_flag"] + \
-               [nf + "_kpis:" + k + "_1h_mean" for k in kpis]
+        view = UNIT[nf] + "_kpis:"
+        refs = [view + "anomaly_score", view + "anomaly_flag"] + \
+               [view + k + "_1h_mean" for k in kpis]
         try:
             feats = feast_online(nf, refs)
         except Exception as e:
