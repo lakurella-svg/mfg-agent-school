@@ -161,6 +161,31 @@ cp .env.example .env                      # set LLM_BASE_URL, LLM_API_KEY, LLM_M
 python agent/moc_agent.py "What is wrong in the core right now?"
 ```
 
+### Web UI
+
+A small local page over the same agent functions (standard library only, no
+extra dependencies): a question box, example questions, an offline/live
+toggle, the step-by-step tool trace, and the final answer.
+
+```bash
+python web/server.py                      # http://127.0.0.1:8101 (Ctrl+C stops it)
+python web/server.py --port 8102          # if 8101 is taken
+```
+
+Live mode uses whatever the shell that starts the server has set: the same
+variables as the CLI (`LLM_PROVIDER=anthropic` + `ANTHROPIC_API_KEY`, or
+`LLM_BASE_URL` / `LLM_API_KEY` / `LLM_MODEL`). The agent reads environment
+variables only, so `.env` is not loaded automatically. Keys never reach the
+page; without them the Live toggle is disabled and the page says what to set.
+On Windows PowerShell:
+
+```powershell
+$env:LLM_PROVIDER = "anthropic"
+$s = Read-Host "Anthropic key" -AsSecureString
+$env:ANTHROPIC_API_KEY = [Runtime.InteropServices.Marshal]::PtrToStringBSTR([Runtime.InteropServices.Marshal]::SecureStringToBSTR($s))
+python web/server.py
+```
+
 To run the tools as standalone MCP servers (for MCP-native harnesses or a gateway in front):
 
 ```bash

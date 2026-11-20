@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MOC Assistant</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --panel: #ffffff; --text: #1b1f24; --muted: #5d6673;
+    --border: #dde1e6; --accent: #0b6bcb; --accent-text: #ffffff;
+    --call: #6b3fb3; --result: #1f7a4d; --warn-bg: #fff4e0; --warn: #8a5300;
+    --err-bg: #fdecec; --err: #a12626; --code-bg: #f0f2f5;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #111418; --panel: #1a1e24; --text: #e6e9ed; --muted: #9aa4b1;
+      --border: #2c323b; --accent: #4c9eff; --accent-text: #0b1220;
+      --call: #b896f2; --result: #5fcf95; --warn-bg: #3a2c12; --warn: #f2c06b;
+      --err-bg: #3b1c1c; --err: #ff9a9a; --code-bg: #12161b;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 920px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 20px; }
+  .panel { background: var(--panel); border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+  textarea { width: 100%; min-height: 70px; resize: vertical; font: inherit;
+    color: var(--text); background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px; }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 10px; }
+  .examples button { background: transparent; color: var(--accent);
+    border: 1px solid var(--border); border-radius: 999px; padding: 4px 12px;
+    font: inherit; font-size: 13px; cursor: pointer; }
+  .examples button:hover { border-color: var(--accent); }
+  .mode { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .mode label { padding: 6px 14px; cursor: pointer; user-select: none; }
+  .mode input { display: none; }
+  .mode input:checked + span { font-weight: 600; color: var(--accent); }
+  .mode label:has(input:disabled) { opacity: .45; cursor: not-allowed; }
+  #ask { margin-left: auto; background: var(--accent); color: var(--accent-text);
+    border: 0; border-radius: 8px; padding: 8px 20px; font: inherit; font-weight: 600; cursor: pointer; }
+  #ask:disabled { opacity: .6; cursor: progress; }
+  .note { font-size: 13px; color: var(--muted); margin-top: 8px; }
+  .warn { background: var(--warn-bg); color: var(--warn); border-radius: 8px; padding: 8px 12px; font-size: 13px; margin-top: 10px; }
+  .error { background: var(--err-bg); color: var(--err); border-radius: 8px; padding: 10px 12px; white-space: pre-wrap; }
+  h2 { font-size: 15px; margin: 0 0 10px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  .answer dl { margin: 0; }
+  .answer dt { font-weight: 600; margin-top: 10px; }
+  .answer dt:first-child { margin-top: 0; }
+  .answer dd { margin: 2px 0 0; }
+  .answer pre, .step pre { white-space: pre-wrap; word-break: break-word; margin: 0; font: inherit; }
+  .step { border-left: 3px solid var(--border); padding: 4px 0 4px 12px; margin: 0 0 10px; }
+  .step.call { border-color: var(--call); }
+  .step.result { border-color: var(--result); }
+  .step .head { font-size: 13px; color: var(--muted); }
+  .step .head b { color: var(--text); font-family: ui-monospace, Consolas, monospace; font-weight: 600; }
+  .step code, .step details pre { font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; }
+  .step details pre { background: var(--code-bg); border-radius: 6px; padding: 8px; max-height: 320px; overflow: auto; margin-top: 4px; }
+  .step summary { cursor: pointer; font-size: 13px; color: var(--muted); }
+  .empty { color: var(--muted); font-size: 14px; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<main>
+  <h1>MOC Assistant</h1>
+  <p class="sub">Ask about the mfg core (station, job, line). The agent checks alerts, anomalies, KPIs and runbooks before answering.</p>
+
+  <section class="panel">
+    <textarea id="q" aria-label="Question">What is wrong in the core right now?</textarea>
+    <div class="row examples" id="examples"></div>
+    <div class="row">
+      <div class="mode" role="radiogroup" aria-label="Mode">
+        <label><input type="radio" name="mode" value="offline" checked><span>Offline</span></label>
+        <label><input type="radio" name="mode" value="live" id="liveRadio"><span>Live</span></label>
+      </div>
+      <button id="ask">Ask</button>
+    </div>
+    <div class="note" id="modeNote">Offline replays a scripted episode over the bundled dataset — the same steps for any question.</div>
+    <div class="warn hidden" id="liveWarn"></div>
+  </section>
+
+  <section class="panel answer">
+    <h2>Answer</h2>
+    <div id="answer" class="empty">No answer yet.</div>
+  </section>
+
+  <section class="panel">
+    <h2>Agent trace</h2>
+    <div id="trace" class="empty">Tool calls and results appear here as the agent works.</div>
+  </section>
+</main>
+<script>
+const EXAMPLES = [
+  "What is wrong in the core right now?",
+  "Why is line throughput degraded?",
+  "Are there any check-in storms on the station layer?",
+  "Which job-layer KPIs moved in the last hour?",
+];
+const $ = (id) => document.getElementById(id);
+const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; };
+
+for (const ex of EXAMPLES) {
+  const b = el("button", null, ex);
+  b.type = "button";
+  b.onclick = () => { $("q").value = ex; $("q").focus(); };
+  $("examples").appendChild(b);
+}
+
+let live = { available: false };
+fetch("/api/status").then(r => r.json()).then(s => {
+  live = s.live;
+  if (!live.available) {
+    $("liveRadio").disabled = true;
+    $("liveWarn").textContent = live.reason;
+    $("liveWarn").classList.remove("hidden");
+  }
+  updateNote();
+}).catch(() => {});
+
+function mode() { return document.querySelector('input[name="mode"]:checked').value; }
+function updateNote() {
+  $("modeNote").textContent = mode() === "live"
+    ? `Live: ${live.provider} · model ${live.model}. The model plans its own tool calls.`
+    : "Offline replays a scripted episode over the bundled dataset — the same steps for any question.";
+}
+document.querySelectorAll('input[name="mode"]').forEach(r => r.onchange = updateNote);
+
+function pretty(text) {
+  try { return JSON.stringify(JSON.parse(text), null, 2); } catch { return text; }
+}
+
+function addStep(ev) {
+  const t = $("trace");
+  if (t.classList.contains("empty")) { t.textContent = ""; t.classList.remove("empty"); }
+  let s;
+  if (ev.type === "tool-call") {
+    s = el("div", "step call");
+    const h = el("div", "head"); h.append(`${ev.ts} · call `, el("b", null, ev.name));
+    s.append(h, el("code", null, JSON.stringify(ev.args)));
+  } else if (ev.type === "tool-result") {
+    s = el("div", "step result");
+    const h = el("div", "head"); h.append(`${ev.ts} · result from `, el("b", null, ev.name), ` · ${ev.result.length} chars`);
+    const d = el("details"); d.append(el("summary", null, "Show result"), el("pre", null, pretty(ev.result)));
+    s.append(h, d);
+  } else {
+    s = el("div", "step");
+    s.append(el("div", "head", `${ev.ts} · ${ev.step}`), el("code", null, ev.detail));
+  }
+  t.appendChild(s);
+}
+
+function showAnswer(text) {
+  const a = $("answer"); a.textContent = ""; a.classList.remove("empty");
+  const labels = ["Findings", "Probable cause", "Recommended next action"];
+  const re = new RegExp(`^\\s*(?:\\*\\*)?(${labels.join("|")})(?:\\*\\*)?\\s*:?(?:\\*\\*)?\\s*`, "i");
+  const parts = []; let cur = null;
+  for (const line of text.split("\n")) {
+    const m = line.match(re);
+    if (m) { cur = { label: m[1], body: line.slice(m[0].length) }; parts.push(cur); }
+    else if (cur) cur.body += "\n" + line;
+  }
+  if (parts.length >= 2) {
+    const dl = el("dl");
+    for (const p of parts) {
+      const dd = el("dd");
+      dd.appendChild(el("pre", null, p.body.trim()));
+      dl.append(el("dt", null, p.label), dd);
+    }
+    a.appendChild(dl);
+  } else {
+    a.appendChild(el("pre", null, text));
+  }
+}
+
+async function ask() {
+  const question = $("q").value.trim();
+  if (!question) return;
+  $("ask").disabled = true; $("ask").textContent = "Working…";
+  $("answer").className = "empty"; $("answer").textContent = "Agent is working…";
+  $("trace").className = "empty"; $("trace").textContent = "Starting…";
+  try {
+    const res = await fetch("/api/ask", { method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question, mode: mode() }) });
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({ error: res.statusText }));
+      throw new Error(e.error);
+    }
+    const reader = res.body.getReader(); const dec = new TextDecoder(); let buf = "";
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      let i;
+      while ((i = buf.indexOf("\n")) >= 0) {
+        const line = buf.slice(0, i); buf = buf.slice(i + 1);
+        if (!line.trim()) continue;
+        const ev = JSON.parse(line);
+        if (ev.type === "answer") showAnswer(ev.text);
+        else if (ev.type === "error") throw new Error(ev.text);
+        else addStep(ev);
+      }
+    }
+  } catch (err) {
+    const a = $("answer"); a.className = ""; a.textContent = "";
+    a.appendChild(el("div", "error", err.message));
+  } finally {
+    $("ask").disabled = false; $("ask").textContent = "Ask";
+  }
+}
+$("ask").onclick = ask;
+$("q").addEventListener("keydown", e => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) ask(); });
+</script>
+</body>
+</html>
